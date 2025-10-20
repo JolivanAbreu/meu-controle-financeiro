@@ -1,0 +1,128 @@
+### 1. Registrar um novo usuário (se ainda não fez)
+POST http://localhost:3333/api/register
+Content-Type: application/json
+
+{
+  "nome": "Maria Souza",
+  "email": "maria.souza@email.com",
+  "senha": "minhasenha123"
+}
+
+### 2. Fazer Login para obter o Token
+POST http://localhost:3333/api/login
+Content-Type: application/json
+
+{
+  "email": "maria.souza@email.com",
+  "senha": "minhasenha123"
+}
+
+### 3. Acessar uma Rota Protegida (Dashboard)
+GET http://localhost:3333/api/dashboard
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+### 4. Criar uma nova transação (receita)
+# Use o token obtido no login
+POST http://localhost:3333/api/transactions
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "tipo": "receita",
+  "categoria": "Salário",
+  "valor": 4000.00,
+  "data": "2025-08-16",
+  "descricao": "Salário mensal"
+}
+
+### 5. Criar uma nova transação (despesa)
+# Use o token obtido no login
+POST http://localhost:3333/api/transactions
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "tipo": "despesa",
+  "categoria": "Alimentação",
+  "valor": 80.50,
+  "data": "2025-09-16",
+  "descricao": "Almoço"
+}
+
+### 6. Listar todas as transações do usuário
+# Use o token obtido no login
+GET http://localhost:3333/api/transactions
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+### 7. Atualizar uma transação existente
+# 1. Copie o ID de uma transação da lista (GET /transactions)
+# 2. Cole o ID na URL abaixo, substituindo o "1"
+# 3. Use o token obtido no login
+PUT http://localhost:3333/api/transactions/2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "valor": 95.00,
+  "descricao": "Almoço com a equipe"
+}
+
+### 8. Apagar uma transação existente
+# 1. Copie o ID de uma transação da lista
+# 2. Cole o ID na URL abaixo, substituindo o "2"
+# 3. Use o token obtido no login
+DELETE http://localhost:3333/api/transactions/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+### 9. Criar um novo orçamento
+# Use o token obtido no login
+POST http://localhost:3333/api/budgets
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "categoria": "Alimentação",
+  "limite": 600.00,
+  "mes": 9,
+  "ano": 2025
+}
+
+### 10. Listar os orçamentos
+# Use o token obtido no login
+# Você pode filtrar adicionando ?mes=9&ano=2025 na URL
+GET http://localhost:3333/api/budgets
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+### 11. Criar uma nova meta financeira
+# Use o token obtido no login
+POST http://localhost:3333/api/goals
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "titulo": "Viagem para a praia",
+  "valor_objetivo": 2500.00,
+  "valor_atual": 350.00,
+  "prazo": "2026-01-15"
+}
+
+### 12. Listar todas as metas
+# Use o token obtido no login
+GET http://localhost:3333/api/goals
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+
+### 13. Atualizar o valor atual de uma meta
+# Copie o ID da meta da lista acima e cole na URL
+PUT http://localhost:3333/api/goals/1
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
+
+{
+  "valor_atual": 500.00
+}
+
+### 14. Apagar uma meta
+# Copie o ID da meta da lista e cole na URL
+DELETE http://localhost:3333/api/goals/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzU4MTEwNzU4LCJleHAiOjE3NTg3MTU1NTh9.JMm6ZLyPRJogC6W5qfqOfJ63v9tCyS5i4y_b13BELcY
