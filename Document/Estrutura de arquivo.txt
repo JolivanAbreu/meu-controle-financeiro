@@ -16,7 +16,9 @@ MEU-CONTROLE-FINANCEIRO/
 │   │   │   │   ├── 20250915203400-create-users.js
 │   │   │   │   ├── 20250916120746-create-transactions.js
 │   │   │   │   ├── 20250917163406-create-budgets.js
-│   │   │   │   └── 20250917175408-create-goals.js
+│   │   │   │   ├── 20250917175408-create-goals.js
+│   │   │   │   ├── 20251019162305-add-recurrence-to-transactions.js
+│   │   │   │   └── 20251019165932-add-recurrence-end-date-to-transactions.js
 │   │   │   └── index.js
 │   │   ├── middlewares/
 │   │   │   └── auth.js
@@ -25,15 +27,16 @@ MEU-CONTROLE-FINANCEIRO/
 │   │   │   ├── Goal.js
 │   │   │   ├── Transaction.js
 │   │   │   └── User.js
-│   │   └── routes/
-│   │       └── routes.js
-│   ├── .gitignore
-│   ├── app.js
-│   ├── server.js
-│   ├── .env
+│   │   ├── routes/
+│   │   │   └── routes.js
+│   │   ├── .gitignore
+│   │   ├── app.js
+│   │   ├── server.js
+│   │   └── .env
 │   ├── .sequelizerc
 │   ├── package-lock.json
 │   └── package.json
+├── backend - Copia/
 ├── Document/
 ├── frontend/
 │   ├── node_modules/
@@ -53,7 +56,6 @@ MEU-CONTROLE-FINANCEIRO/
 │   │   │   └── TransactionForm.jsx
 │   │   ├── contexts/
 │   │   │   └── AuthContext.jsx
-│   │   ├── hooks/
 │   │   ├── pages/
 │   │   │   ├── BudgetsPage.jsx
 │   │   │   ├── DashboardPage.jsx
