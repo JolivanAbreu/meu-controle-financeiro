@@ -8,6 +8,7 @@ import {
   FaChartBar,
   FaSignOutAlt,
   FaTimes,
+  FaTag,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -35,12 +36,12 @@ function Sidebar({ isOpen, onClose }) {
     <div className={sidebarClasses}>
       <div className="flex justify-between items-center p-5 text-2xl font-bold border-b border-gray-700">
         Meu Controle
-        {}
+        {/* Botão de Fechar Mobile */}
         <button onClick={onClose} className="md:hidden">
           <FaTimes />
         </button>
       </div>
-      {}
+      {/* Perfil do Usuário */}
       <div className="p-5">
         <h3 className="text-lg font-semibold">{user?.nome}</h3>
         <p className="text-sm text-gray-400">{user?.email}</p>
@@ -75,6 +76,20 @@ function Sidebar({ isOpen, onClose }) {
               Relatórios
             </NavLink>
           </li>
+
+          {}
+          <li className="p-1">
+            <NavLink
+              to="/categorias"
+              className={navLinkClasses}
+              onClick={onClose}
+            >
+              <FaTag className="mr-3" /> {}
+              Categorias
+            </NavLink>
+          </li>
+          {}
+
         </ul>
       </nav>
       <div className="p-5 border-t border-gray-700">

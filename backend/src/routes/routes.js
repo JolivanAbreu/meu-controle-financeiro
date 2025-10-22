@@ -10,6 +10,9 @@ const SessionController = require("../controllers/SessionController");
 const TransactionController = require("../controllers/TransactionController");
 const BudgetController = require('../controllers/BudgetController');
 const GoalController = require('../controllers/GoalController');
+const CategoryController = require("../controllers/CategoryController");
+const SubcategoryController = require("../controllers/SubcategoryController");
+
 
 const routes = new Router();
 
@@ -29,10 +32,11 @@ routes.get("/dashboard", (req, res) => {
 
 // Rotas de Transações
 routes.get('/transactions', TransactionController.index);
-// routes.get('/transactions/:id', TransactionController.show); // <-- 1. REMOVIDA (OU COMENTADA)
+// routes.get('/transactions/:id', TransactionController.show);
 routes.post('/transactions', TransactionController.store);
 routes.put('/transactions/:id', TransactionController.update);
 routes.delete('/transactions/:id', TransactionController.destroy);
+routes.delete('/transactions/group/:groupId', TransactionController.destroyGroup);
 
 // Rotas de Orçamentos
 routes.post('/budgets', BudgetController.store);
@@ -46,8 +50,13 @@ routes.get('/goals', GoalController.index);
 routes.put('/goals/:id', GoalController.update);
 routes.delete('/goals/:id', GoalController.destroy);
 
-// NOVA ROTA para excluir transações recorrentes
-// 2. CORRIGIDO de deleteGroup para destroyGroup
-routes.delete('/transactions/group/:groupId', TransactionController.destroyGroup);
+// --- NOVAS ROTAS DE CATEGORIAS ---
+
+// Lista as Categorias principais (fixas, ex: Alimentação, Transporte)
+routes.get('/categories', CategoryController.index);
+
+routes.get('/subcategories', SubcategoryController.index);
+routes.post('/subcategories', SubcategoryController.store);
+
 
 module.exports = routes;

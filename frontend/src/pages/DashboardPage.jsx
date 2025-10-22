@@ -12,7 +12,7 @@ import {
   FaArrowDown,
 } from "react-icons/fa";
 
-// Listas de meses e anos (sem alteração)
+// ... (Listas de meses e anos, não precisa mexer) ...
 const meses = [
   { nome: "Janeiro", valor: 1 },
   { nome: "Fevereiro", valor: 2 },
@@ -33,6 +33,7 @@ const anos = Array.from(
 );
 
 function DashboardPage() {
+  // ... (Toda a lógica de estados, fetch, modais, etc., continua igual) ...
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,12 +44,9 @@ function DashboardPage() {
   const [anoSelecionado, setAnoSelecionado] = useState(
     new Date().getFullYear()
   );
-
-  // --- NOVOS ESTADOS ---
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
 
-  // fetchTransactions (sem alteração)
   const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
@@ -74,7 +72,6 @@ function DashboardPage() {
     fetchTransactions();
   }, [fetchTransactions]);
 
-  // Cálculos de totais (sem alteração)
   const totalReceitas = transactions
     .filter((t) => t.tipo === "receita")
     .reduce((acc, t) => acc + parseFloat(t.valor), 0);
@@ -83,11 +80,9 @@ function DashboardPage() {
     .reduce((acc, t) => acc + parseFloat(t.valor), 0);
   const saldo = totalReceitas - totalDespesas;
 
-  // --- MODIFICADO ---
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
-    // Limpa também o modal de exclusão
     setShowDeleteModal(false);
     setTransactionToDelete(null);
   };
@@ -102,25 +97,18 @@ function DashboardPage() {
     setIsModalOpen(true);
   };
 
-  // --- NOVA LÓGICA DE EXCLUSÃO ---
-
-  // 1. Chamado pelo ícone da lixeira
   const handleDeleteClick = (transaction) => {
     if (transaction.recurrence === "fixo" && transaction.recurrence_group_id) {
-      // Se for fixa, abre o modal de opções
       setTransactionToDelete(transaction);
       setShowDeleteModal(true);
     } else {
-      // Se for variável, confirma e exclui
       if (window.confirm("Tem certeza que deseja apagar esta transação?")) {
         handleDeleteSingle(transaction.id);
       }
     }
   };
 
-  // 2. Exclui APENAS UMA transação
   const handleDeleteSingle = async (transactionId) => {
-    // Se a transactionId não for passada, pega do estado
     const id = transactionId || transactionToDelete?.id;
     if (!id) return;
 
@@ -132,19 +120,18 @@ function DashboardPage() {
         error: "Não foi possível apagar a transação.",
       });
       fetchTransactions();
-      closeModal(); // Fecha o modal de delete
+      closeModal();
     } catch (error) {
       console.error("Erro ao apagar transação:", error);
     }
   };
 
-  // 3. Exclui A TRANSAÇÃO ATUAL E AS FUTURAS
   const handleDeleteGroup = async () => {
     if (!transactionToDelete) return;
 
     const { recurrence_group_id, data } = transactionToDelete;
     const promise = api.delete(`/transactions/group/${recurrence_group_id}`, {
-      params: { date: data }, // Envia a data de corte
+      params: { date: data },
     });
 
     try {
@@ -154,13 +141,12 @@ function DashboardPage() {
         error: "Não foi possível apagar as transações futuras.",
       });
       fetchTransactions();
-      closeModal(); // Fecha o modal de delete
+      closeModal();
     } catch (error) {
       console.error("Erro ao apagar grupo de transações:", error);
     }
   };
 
-  // Funções de formatação (sem alteração)
   const formatCurrency = (value) =>
     new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -171,7 +157,7 @@ function DashboardPage() {
 
   return (
     <div>
-      {/* CABEÇALHO E FILTROS (sem alteração) */}
+      {/* CABEÇALHO, FILTROS E MODAIS (Tudo igual) */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-3xl font-bold">Painel</h1>
         <div className="flex items-center gap-2">
@@ -206,7 +192,6 @@ function DashboardPage() {
         </div>
       </div>
 
-      {/* MODAL DE CRIAR/EDITAR (sem alteração) */}
       <Modal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -221,7 +206,6 @@ function DashboardPage() {
         />
       </Modal>
 
-      {/* --- NOVO MODAL DE EXCLUSÃO --- */}
       <Modal
         isOpen={showDeleteModal}
         onClose={closeModal}
@@ -247,9 +231,8 @@ function DashboardPage() {
           </div>
         </div>
       </Modal>
-      {/* ^-- CORRIGIDO --^ */}
 
-      {/* CARTÕES DE RESUMO (sem alteração) */}
+      {/* CARTÕES DE RESUMO (Tudo igual) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-green-100 p-4 rounded-lg shadow-md flex items-center">
           <FaArrowUp className="text-green-600 text-3xl mr-4" />
@@ -302,8 +285,7 @@ function DashboardPage() {
                   <tr className="text-left border-b">
                     <th className="py-2 px-3">Data</th>
                     <th className="py-2 px-3">Categoria</th>
-                    <th className="py-2 px-3">Tipo</th>{" "}
-                    {/* <-- COLUNA ADICIONADA */}
+                    <th className="py-2 px-3">Tipo</th>
                     <th className="py-2 px-3 text-right">Valor</th>
                     <th className="py-2 px-3 text-center">Ações</th>
                   </tr>
@@ -312,12 +294,35 @@ function DashboardPage() {
                   {transactions.map((t) => (
                     <tr key={t.id} className="border-b hover:bg-gray-50">
                       <td className="py-3 px-3">{formatDate(t.data)}</td>
-                      <td className="py-3 px-3">{t.categoria}</td>
 
-                      {/* CÉLULA ADICIONADA - A classe 'capitalize' do Tailwind deixa a primeira letra maiúscula */}
-                      <td className="py-3 px-3 capitalize">
-                        {t.recurrence} {/* Exibirá "Fixo" ou "Variável" */}
+                      {/* Coluna Categoria (Corrigida) */}
+                      <td className="py-3 px-3">
+                        {t.subcategory ? (
+                          <>
+                            <span className="font-semibold">
+                              {t.subcategory.category.name}
+                            </span>
+                            <span className="text-gray-500">
+                              {" "}
+                              / {t.subcategory.name}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-gray-400">Sem Categoria</span>
+                        )}
                       </td>
+
+                      {/* --- CORREÇÃO: Exibir Tipo e Recorrência --- */}
+                      <td className="py-3 px-3">
+                        <span className="font-semibold capitalize">
+                          {t.tipo} {/* "Despesa" ou "Receita" */}
+                        </span>
+                        <span className="text-gray-500 capitalize">
+                          {" "}
+                          / {t.recurrence} {/* "Fixo" ou "Variável" */}
+                        </span>
+                      </td>
+                      {/* --- FIM DA CORREÇÃO --- */}
 
                       <td
                         className={`py-3 px-3 text-right font-semibold ${

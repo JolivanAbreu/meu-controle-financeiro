@@ -8,10 +8,10 @@ class Transaction extends Model {
       {
         user_id: DataTypes.INTEGER,
         tipo: DataTypes.ENUM('receita', 'despesa'),
-        categoria: DataTypes.STRING,
         valor: DataTypes.DECIMAL(10, 2),
         data: DataTypes.DATEONLY,
         descricao: DataTypes.TEXT,
+        subcategory_id: DataTypes.INTEGER,
         recurrence: DataTypes.ENUM('fixo', 'variável'),
         recurrence_group_id: DataTypes.STRING,
         recurrence_end_date: DataTypes.DATEONLY,
@@ -26,6 +26,10 @@ class Transaction extends Model {
 
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+    this.belongsTo(models.Subcategory, {
+      foreignKey: 'subcategoryId',
+      as: 'subcategory',
+    });
   }
 }
 

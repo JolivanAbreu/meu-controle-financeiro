@@ -40,6 +40,7 @@ class User extends Model {
       foreignKey: 'user_id',
       as: 'goals'
     });
+    this.hasMany(models.Subcategory, { foreignKey: 'userId', as: 'subcategories' });
   }
 }
 
