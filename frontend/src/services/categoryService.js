@@ -2,7 +2,6 @@
 
 import api from './api';
 
-
 export const getCategories = () => {
   return api.get('/categories');
 };
@@ -13,10 +12,25 @@ export const getSubcategories = () => {
 
 /**
  * Cria uma nova subcategoria.
- * @param {object} data - { name: 'Nome da Subcategoria', categoryId: 1 }
+ * @param {object} data - { name: 'Nome', categoryId: 1 }
  */
 export const createSubcategory = (data) => {
   return api.post('/subcategories', data);
 };
 
-// TODO: Você pode adicionar 'updateSubcategory' e 'deleteSubcategory' aqui no futuro
+/**
+ * Atualiza uma subcategoria existente.
+ * @param {number} id - ID da subcategoria a ser atualizada.
+ * @param {object} data - { name: 'Novo Nome', categoryId: 2 }
+ */
+export const updateSubcategory = (id, data) => {
+  return api.put(`/subcategories/${id}`, data);
+};
+
+/**
+ * Deleta uma subcategoria.
+ * @param {number} id - ID da subcategoria a ser deletada.
+ */
+export const deleteSubcategory = (id) => {
+  return api.delete(`/subcategories/${id}`);
+};
