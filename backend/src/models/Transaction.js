@@ -6,26 +6,32 @@ class Transaction extends Model {
   static init(sequelize) {
     super.init(
       {
-        user_id: DataTypes.INTEGER,
         tipo: DataTypes.ENUM('receita', 'despesa'),
         valor: DataTypes.DECIMAL(10, 2),
         data: DataTypes.DATEONLY,
         descricao: DataTypes.TEXT,
-        subcategory_id: DataTypes.INTEGER,
-        recurrence: DataTypes.ENUM('fixo', 'variável'),
+        recurrence: DataTypes.STRING,
         recurrence_group_id: DataTypes.STRING,
-        recurrence_end_date: DataTypes.DATEONLY,
+        recurrence_end_date: DataTypes.DATE,
+
+        subcategoryId: {
+          type: DataTypes.INTEGER,
+          field: 'subcategory_id',
+        },
+        userId: {
+          type: DataTypes.INTEGER,
+          field: 'user_id',
+        },
       },
       {
         sequelize,
         tableName: 'transactions',
       }
     );
-    return this;
   }
 
   static associate(models) {
-    this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+    this.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
     this.belongsTo(models.Subcategory, {
       foreignKey: 'subcategoryId',
       as: 'subcategory',

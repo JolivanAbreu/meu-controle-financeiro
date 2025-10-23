@@ -12,6 +12,7 @@ const BudgetController = require('../controllers/BudgetController');
 const GoalController = require('../controllers/GoalController');
 const CategoryController = require("../controllers/CategoryController");
 const SubcategoryController = require("../controllers/SubcategoryController");
+const ReportController = require('../controllers/ReportController');
 
 
 const routes = new Router();
@@ -50,13 +51,16 @@ routes.get('/goals', GoalController.index);
 routes.put('/goals/:id', GoalController.update);
 routes.delete('/goals/:id', GoalController.destroy);
 
-// --- NOVAS ROTAS DE CATEGORIAS ---
+// --- ROTAS DE CATEGORIAS ---
 
 // Lista as Categorias principais (fixas, ex: Alimentação, Transporte)
 routes.get('/categories', CategoryController.index);
 
+// Lista/Cria Subcategorias do usuário
 routes.get('/subcategories', SubcategoryController.index);
 routes.post('/subcategories', SubcategoryController.store);
 
+// --- ROTA DE RELATÓRIOS ---
+routes.post('/reports/custom', ReportController.generate); // Add this route
 
 module.exports = routes;
