@@ -323,7 +323,7 @@ function CategoriesPage() {
             </div>
         </Modal>
 
-    </div>
+    </div> // Fim do container principal
   );
 }
 

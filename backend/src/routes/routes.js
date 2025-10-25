@@ -47,8 +47,8 @@ routes.get('/categories', CategoryController.index);
 routes.get('/subcategories', SubcategoryController.index);
 routes.post('/subcategories', SubcategoryController.store);
 // --- NOVAS ROTAS ---
-routes.put('/subcategories/:id', SubcategoryController.update);    // Rota para editar
-routes.delete('/subcategories/:id', SubcategoryController.destroy); // Rota para deletar
+routes.put('/subcategories/:id', SubcategoryController.update);
+routes.delete('/subcategories/:id', SubcategoryController.destroy);
 // --- FIM NOVAS ROTAS ---
 
 // --- ROTA DE RELATÓRIOS ---

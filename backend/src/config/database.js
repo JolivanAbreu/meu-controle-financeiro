@@ -10,6 +10,12 @@ const defaultConfig = {
     underscored: true,
     underscoredAll: true,
   },
+  pool: {
+    max: 10, 
+    min: 0,
+    acquire: 60000, 
+    idle: 20000
+  }
 };
 
 module.exports = {
@@ -19,6 +25,7 @@ module.exports = {
     username: process.env.DB_USER,
     password: process.env.DB_PASS,
     database: process.env.DB_NAME,
+    logging: console.log,
   },
 
   test: {

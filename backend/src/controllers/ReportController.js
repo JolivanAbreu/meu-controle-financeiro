@@ -21,36 +21,115 @@ class ReportController {
     }
 
     async getFilteredTransactions(filters, userId) {
-        const { startDate, endDate, categories, subcategories, keywords } = filters;
+        const { startDate, endDate, categories = [], subcategories = [], keywords } = filters; // Garante que arrays existam
+
+        // 1. Encontra o ID da categoria "Outros" (continua igual)
         const outrosCategory = await Category.findOne({ where: { name: "Outros" } });
         const outrosId = outrosCategory ? outrosCategory.id : null;
-        const whereClause = { userId, data: { [Op.between]: [parseISO(startDate), parseISO(endDate)] } };
-        const filterConditions = [];
-        if (subcategories && subcategories.length > 0) {
-            filterConditions.push({ subcategoryId: { [Op.in]: subcategories } });
-        } else if (categories && categories.length > 0) {
-            const includeCategoryIds = categories.filter(catId => !(catId === outrosId && keywords && keywords.trim() !== ""));
-            if (includeCategoryIds.length > 0) {
-                const subcatsInCategory = await Subcategory.findAll({ where: { categoryId: { [Op.in]: includeCategoryIds }, userId }, attributes: ['id'], });
-                const subcatIds = subcatsInCategory.map(s => s.id);
-                if (subcatIds.length > 0) { filterConditions.push({ subcategoryId: { [Op.in]: subcatIds } }); }
-            }
-        }
-        if (outrosId && categories.includes(outrosId) && keywords && keywords.trim() !== "") {
-            const outrosSubcats = await Subcategory.findAll({ where: { categoryId: outrosId, userId }, attributes: ["id"] });
+
+        // 2. Constrói a cláusula WHERE base (continua igual)
+        const whereClause = {
+            userId,
+            data: {
+                [Op.between]: [parseISO(startDate), parseISO(endDate)],
+            },
+        };
+
+        // --- LÓGICA DE DECISÃO REFINADA ---
+        const onlyOutrosSelected = categories.length === 1 && categories[0] === outrosId;
+        const keywordsProvided = keywords && keywords.trim() !== "";
+        const specificSubcatsSelected = subcategories.length > 0;
+
+        // CASO ESPECIAL: Apenas "Outros" com Palavras-Chave (e sem subcategorias específicas)
+        if (onlyOutrosSelected && keywordsProvided && !specificSubcatsSelected) {
+            console.log("Filtrando APENAS por 'Outros' com palavra-chave:", keywords);
+            if (!outrosId) return []; // Categoria Outros não existe? Retorna vazio.
+
+            const outrosSubcats = await Subcategory.findAll({
+                where: { categoryId: outrosId, userId },
+                attributes: ["id"],
+            });
             const outrosSubcatIds = outrosSubcats.map((s) => s.id);
-            if (outrosSubcatIds.length > 0) { filterConditions.push({ [Op.and]: [{ subcategoryId: { [Op.in]: outrosSubcatIds } }, { descricao: { [Op.like]: `%${keywords}%` } }] }); }
+
+            if (outrosSubcatIds.length === 0) {
+                console.log("Usuário não tem subcategorias 'Outros' para filtrar por palavra-chave.");
+                return []; // Não há subcategorias "Outros" para buscar
+            }
+
+            // Adiciona a condição AND diretamente ao whereClause principal
+            whereClause[Op.and] = [
+                { subcategoryId: { [Op.in]: outrosSubcatIds } },
+                { descricao: { [Op.like]: `%${keywords}%` } }
+            ];
+            // NÃO USAREMOS filterConditions ou Op.or neste caso
+
         }
-        if (filterConditions.length > 0) {
-            whereClause[Op.or] = filterConditions;
-        } else if (!categories || categories.length === 0) { console.log("No categories or subcategories selected for filtering."); return []; }
-        console.log("Executing query with whereClause:", JSON.stringify(whereClause, null, 2));
+        // TODOS OS OUTROS CASOS (Múltiplas categorias, subcategorias específicas, Outros sem keyword, etc.)
+        else {
+            console.log("Aplicando filtros combinados (OR)...");
+            const filterConditions = [];
+
+            // Condição A: Subcategorias específicas selecionadas
+            if (specificSubcatsSelected) {
+                console.log("Adicionando filtro por subcategorias específicas:", subcategories);
+                filterConditions.push({
+                    subcategoryId: { [Op.in]: subcategories },
+                });
+            }
+            // Condição B: Categorias selecionadas, mas sem subcategorias específicas
+            // (Inclui todas as subcats dessas categorias, exceto 'Outros' se keywords foram dadas para ele)
+            else if (categories.length > 0) {
+                console.log("Adicionando filtro por categorias (todas as subcats):", categories);
+                const includeCategoryIds = categories.filter(catId => !(catId === outrosId && keywordsProvided)); // Exclui 'Outros' se keywords foram fornecidas para ele
+
+                if (includeCategoryIds.length > 0) {
+                    const subcatsInCategory = await Subcategory.findAll({
+                        where: { categoryId: { [Op.in]: includeCategoryIds }, userId },
+                        attributes: ['id'],
+                    });
+                    const subcatIds = subcatsInCategory.map(s => s.id);
+                    if (subcatIds.length > 0) {
+                        filterConditions.push({ subcategoryId: { [Op.in]: subcatIds } });
+                    }
+                }
+            }
+
+            // Condição C: "Outros" selecionado E com Palavras-Chave (adiciona como condição OR)
+            if (outrosId && categories.includes(outrosId) && keywordsProvided) {
+                console.log("Adicionando filtro 'Outros' com palavra-chave como condição OR:", keywords);
+                const outrosSubcats = await Subcategory.findAll({ where: { categoryId: outrosId, userId }, attributes: ["id"] });
+                const outrosSubcatIds = outrosSubcats.map((s) => s.id);
+
+                if (outrosSubcatIds.length > 0) {
+                    filterConditions.push({
+                        [Op.and]: [
+                            { subcategoryId: { [Op.in]: outrosSubcatIds } },
+                            { descricao: { [Op.like]: `%${keywords}%` } },
+                        ],
+                    });
+                }
+            }
+
+            // Aplica as condições OR se houver alguma
+            if (filterConditions.length > 0) {
+                whereClause[Op.or] = filterConditions;
+            } else if (categories.length === 0 && !specificSubcatsSelected) {
+                // Se realmente NENHUM filtro de categoria/subcategoria foi aplicado
+                console.log("Nenhuma categoria ou subcategoria selecionada para filtrar.");
+                return [];
+            }
+        } // Fim do else (casos combinados)
+
+        // 4. Executa a query (continua igual)
+        console.log("Executando query final com whereClause:", JSON.stringify(whereClause, null, 2));
         const transactions = await Transaction.findAll({
             where: whereClause,
-            include: [{ model: Subcategory, as: "subcategory", include: [{ model: Category, as: "category" }] }],
+            include: [
+                { model: Subcategory, as: "subcategory", include: [{ model: Category, as: "category" }] },
+            ],
             order: [["data", "ASC"], ["subcategory", "category", "name", "ASC"]],
         });
-        console.log(`Found ${transactions.length} transactions.`);
+        console.log(`Encontradas ${transactions.length} transações.`);
         return transactions;
     }
 
