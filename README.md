@@ -1,145 +1,342 @@
-# 🚀 MEU-CONTROLE-FINANCEIRO
+# 💰 MEU-CONTROLE-FINANCEIRO
 
-Uma aplicação web full-stack para gerenciamento de finanças pessoais, construída com Node.js (API), React (Frontend) e Sequelize.
-
----
-
-## 📋 Índice
-
-* [🎯 Sobre o Projeto](#-sobre-o-projeto)
-* [✨ Funcionalidades Principais](#-funcionalidades-principais)
-* [🚀 Tecnologias Utilizadas](#-tecnologias-utilizadas)
-* [🔧 Instalação e Execução](#-instalação-e-execução)
-* [📚 Documentação da API (Resumo)](#-documentação-da-api-resumo)
-* [📄 Licença](#-licença)
+Uma aplicação **Full-Stack Web** desenvolvida para **gerenciamento de finanças pessoais**, permitindo que usuários controlem receitas, despesas, orçamentos e metas de economia de forma simples e intuitiva.
 
 ---
 
-## 🎯 Sobre o Projeto
+## 🧭 Visão Geral do Sistema
 
-O "Meu Controle Financeiro" é um sistema completo para ajudar usuários a organizar sua vida financeira. Ele permite o cadastro detalhado de receitas e despesas, categorização, criação de orçamentos mensais e acompanhamento de metas de economia.
+O **MEU-CONTROLE-FINANCEIRO** é um sistema completo para organização financeira pessoal. Ele inclui autenticação segura, categorização de gastos, orçamentos mensais, metas de economia e geração de relatórios em PDF.
 
-O projeto é dividido em duas partes principais:
+### ✨ Principais Funcionalidades
 
-* **`backend/`**: Uma API RESTful construída em **Node.js** e **Express**, usando **Sequelize** como ORM para se comunicar com o banco de dados.
-* **`frontend/`**: Uma SPA (Single Page Application) construída em **React** e **Vite**, que consome a API do backend.
+- **Autenticação de Usuário:**  
+  Registro (`/register`) e login (`/login`) com **JWT (JSON Web Token)** para segurança.
 
----
+- **Gerenciamento de Transações:**  
+  CRUD completo para receitas e despesas.  
+  Suporte a transações **fixas (recorrentes)** e **variáveis (únicas)**.
 
-## ✨ Funcionalidades Principais
+- **Categorização:**  
+  Categorias fixas (ex: `Moradia`, `Transporte`) e subcategorias personalizadas (ex: `Aluguel`, `Gasolina`).
 
-* **Autenticação Segura:** Sistema de registro e login de usuários com tokens **JWT**.
-* **Gerenciamento de Transações (CRUD):** Cadastro completo de receitas e despesas.
-* **Transações Recorrentes:** Suporte para transações "fixas" (parceladas), que geram automaticamente as entradas futuras.
-* **Categorização em Dois Níveis:**
-    * **Categorias:** Entidades fixas (ex: "Moradia", "Lazer", "Alimentação").
-    * **Subcategorias:** Criadas e gerenciadas pelo usuário (ex: "Aluguel", "Cinema", "Supermercado").
-* **Orçamentos Mensais:** Permite ao usuário definir um limite de gasto por Categoria para um mês/ano específico (ex: R$ 500 em "Lazer" para Outubro/2025).
-* **Acompanhamento de Metas:**
-    * Criação de metas (ex: "Viagem de Férias") com valor-alvo e prazo.
-    * Registro de aportes (contribuições) para cada meta.
-    * Cálculos automáticos de progresso (`valor_restante`, `meses_restantes`, `aporte_sugerido_mes`).
-    * Status de meta (`on_track`, `behind`, `completed`, `overdue`).
-* **Geração de Relatórios:**
-    * Filtros avançados por data, categorias, subcategorias e palavras-chave.
-    * Geração de um relatório em **PDF** detalhado.
-    * Opção de **enviar o PDF por e-mail** para o usuário ou fazer o download.
+- **Orçamentos (Budgets):**  
+  Definição de **limites mensais por categoria**, com cálculo automático do gasto atual.
+
+- **Metas de Economia (Goals):**  
+  Criação de **metas com valor e prazo**, com cálculo de progresso e **aporte sugerido mensal**.
+
+- **Relatórios (Reports):**  
+  Geração de relatórios em **PDF** com filtros personalizados e envio automático por **e-mail (SMTP)**.
 
 ---
 
-## 🚀 Tecnologias Utilizadas
+## 🧩 Fluxo do Usuário (Frontend)
 
-### Backend
-* [Node.js](https://nodejs.org/)
-* [Express](https://expressjs.com/)
-* [Sequelize](https://sequelize.org/) (ORM)
-* [JSON Web Token (JWT)](https://jwt.io/) (Autenticação)
-* [Bcrypt.js](https://github.com/kelektiv/bcrypt.js) (Hashing de Senhas)
-* [Yup](https://github.com/jquense/yup) (Validação de dados)
-* [Nodemailer](https://nodemailer.com/) (Envio de e-mails)
-* [PDFMake](https://pdfmake.github.io/) (Geração de PDFs no servidor)
+O fluxo de navegação é dividido em **rotas públicas** e **rotas protegidas**:
 
-### Frontend
-* [React](https://reactjs.org/)
-* [Vite](https://vitejs.dev/)
-* [React Router DOM](https://reactrouter.com/) (Roteamento)
-* [Axios](https://axios-http.com/) (Requisições HTTP)
-* [Tailwind CSS](https://tailwindcss.com/) (Estilização)
-* [React Hot Toast](https://react-hot-toast.com/) (Notificações)
+### 🔓 Rotas Públicas
+| Rota | Descrição |
+|------|------------|
+| `/login` | Página de Login |
+| `/register` | Página de Registro |
+| `/` | Redireciona para `/login` |
 
-### Banco de Dados & Infra
-* SQL (PostgreSQL, MariaDB, ou MySQL, via Sequelize)
-* [Docker](https://www.docker.com/) / [Docker Compose](https://docs.docker.com/compose/)
+### 🔐 Rotas Protegidas (após login)
+| Rota | Descrição |
+|------|------------|
+| `/dashboard` | Página principal (DashboardPage) |
+| `/budgets` | Gerenciamento de orçamentos (BudgetsPage) |
+| `/goals` | Metas de economia (GoalsPage) |
+| `/reports` | Geração de relatórios (ReportsPage) |
+| `/categorias` | Gerenciamento de subcategorias (CategoriesPage) |
+
+> Todas as rotas protegidas são renderizadas dentro de um **MainLayout**, contendo a barra lateral de navegação.
 
 ---
 
-## 🔧 Instalação e Execução
+## 🗄️ Modelo de Dados (Schema do Banco)
 
-### Pré-requisitos
+Abaixo, o modelo de entidades e relacionamentos utilizados pelo sistema:
 
-* [Node.js](https://nodejs.org/en/) (v16 ou superior)
-* [Docker](https://www.docker.com/get-started) e [Docker Compose](https://docs.docker.com/compose/install/)
-* Um gerenciador de pacotes (NPM ou Yarn)
+### 👤 User (Usuário)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| nome | String | Nome do usuário |
+| email | String | E-mail do usuário |
+| senha_hash | String | Senha criptografada |
 
-### 1. Configuração do Ambiente
+**Relações:**
+- 1:N → Transações  
+- 1:N → Orçamentos  
+- 1:N → Metas  
+- 1:N → Subcategorias  
+- 1:N → Contribuições de metas  
 
-1.  Clone o repositório:
-    ```sh
-    git clone [https://github.com/SEU-USUARIO/MEU-CONTROLE-FINANCEIRO.git](https://github.com/SEU-USUARIO/MEU-CONTROLE-FINANCEIRO.git)
-    cd MEU-CONTROLE-FINANCEIRO
-    ```
+---
 
-2.  **Banco de Dados (com Docker)**
-    O arquivo `docker-compose.yml` na raiz gerencia o banco de dados. Para iniciá-lo:
-    ```sh
-    docker-compose up -d
-    ```
+### 🏷️ Category (Categoria)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| name | String | Nome da categoria (fixa) |
 
-3.  **Configurar Variáveis de Ambiente (Backend)**
-    Renomeie `backend/.env.example` (você precisa criá-lo) para `backend/.env` e preencha as variáveis:
+**Relações:**
+- 1:N → Subcategorias  
 
-    ```ini
-    # Configuração da Aplicação
-    APP_SECRET=SEU_SEGREDO_JWT_SUPER_SEGURO
+> As categorias são **pré-definidas** no banco (ex: Moradia, Lazer, Saúde).
 
-    # Configuração do Banco de Dados (deve bater com o docker-compose.yml)
-    DB_DIALECT=mysql # ou postgres
-    DB_HOST=localhost
-    DB_PORT=3306 # ou 5432
-    DB_USER=root # ou seu usuário
-    DB_PASS=sua_senha_docker
-    DB_NAME=meu_controle_financeiro
+---
 
-    # Configuração de E-mail (para relatórios)
-    MAIL_HOST=smtp.mailtrap.io
-    MAIL_PORT=2525
-    MAIL_USER=seu_usuario_mail
-    MAIL_PASS=sua_senha_mail
-    ```
+### 🪪 Subcategory (Subcategoria)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| name | String | Nome da subcategoria |
 
-### 2. Backend (API)
+**Relações:**
+- N:1 → Usuário  
+- N:1 → Categoria  
+- 1:N → Transações  
 
-```sh
-# 1. Navegue até a pasta do backend
-cd backend
+> Subcategorias são **criadas e gerenciadas pelos usuários**.
 
-# 2. Instale as dependências
+---
+
+### 💸 Transaction (Transação)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| tipo | ENUM('receita', 'despesa') | Tipo da transação |
+| valor | Number | Valor da transação |
+| data | Date | Data da transação |
+| descricao | String | Descrição |
+| recurrence | ENUM('fixo', 'variável') | Tipo de recorrência |
+| recurrence_group_id | String | ID de grupo para parcelas |
+| recurrence_end_date | Date | Data final de recorrência |
+
+**Relações:**
+- N:1 → Usuário  
+- N:1 → Subcategoria  
+
+---
+
+### 💰 Budget (Orçamento)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| categoria | String | Nome da categoria principal |
+| limite | Number | Limite mensal |
+| mes | Number | Mês de referência |
+| ano | Number | Ano de referência |
+
+**Relações:**
+- N:1 → Usuário  
+
+---
+
+### 🎯 Goal (Meta)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| titulo | String | Nome da meta |
+| valor_objetivo | Number | Valor total desejado |
+| valor_atual | Number | Valor atual acumulado |
+| prazo | Date | Data limite da meta |
+
+**Relações:**
+- N:1 → Usuário  
+- 1:N → Contribuições de metas  
+
+> O sistema calcula automaticamente:  
+> `valor_restante`, `meses_restantes`, `aporte_sugerido_mes` e `status`.
+
+---
+
+### 📈 GoalContribution (Aporte de Meta)
+| Campo | Tipo | Descrição |
+|--------|------|-----------|
+| valor | Number | Valor aportado |
+| data | Date | Data do aporte |
+
+**Relações:**
+- N:1 → Usuário  
+- N:1 → Meta  
+
+---
+
+## 🚀 Referência da API (Endpoints)
+
+### 👤 Autenticação e Usuários
+#### `POST /register` *(Pública)*
+Registra um novo usuário.  
+```json
+{
+  "nome": "João",
+  "email": "joao@email.com",
+  "senha": "123456"
+}
+POST /login (Pública)
+Autentica o usuário e retorna um token JWT.
+
+json
+Copiar código
+{
+  "email": "joao@email.com",
+  "senha": "123456"
+}
+💸 Transações (Transactions)
+GET /transactions (Autenticada)
+Lista transações do usuário com filtros:
+startDate, endDate, categories, subcategories, keywords.
+
+POST /transactions (Autenticada)
+Cria uma nova transação.
+Se recurrence for "fixo", cria múltiplas parcelas.
+
+json
+Copiar código
+{
+  "tipo": "despesa",
+  "valor": 200,
+  "data": "2025-10-25",
+  "descricao": "Supermercado",
+  "subcategoryId": 10,
+  "recurrence": "fixo",
+  "installments": 3
+}
+PUT /transactions/:id (Autenticada)
+Atualiza uma transação (ou todas futuras com applyToFuture=true).
+
+DELETE /transactions/:id (Autenticada)
+Remove uma transação.
+
+DELETE /transactions/group/:groupId (Autenticada)
+Remove um grupo de transações recorrentes a partir de uma data específica.
+
+📊 Orçamentos (Budgets)
+GET /budgets
+Lista orçamentos filtrados por mês/ano.
+Calcula gasto_atual automaticamente.
+
+POST /budgets
+Cria um novo orçamento.
+
+json
+Copiar código
+{
+  "categoria": "Lazer",
+  "limite": 500,
+  "mes": 10,
+  "ano": 2025
+}
+PUT /budgets/:id
+Atualiza um orçamento existente.
+
+DELETE /budgets/:id
+Remove um orçamento.
+
+🎯 Metas (Goals)
+GET /goals
+Lista todas as metas com progresso calculado:
+
+valor_restante
+
+meses_restantes
+
+aporte_sugerido_mes
+
+status
+
+POST /goals
+Cria uma nova meta de economia.
+
+json
+Copiar código
+{
+  "titulo": "Viagem de Férias",
+  "valor_objetivo": 10000,
+  "prazo": "2026-12-31"
+}
+POST /goals/:id/contribute
+Adiciona um aporte à meta.
+
+json
+Copiar código
+{
+  "valor": 500,
+  "data": "2025-10-26"
+}
+🏷️ Categorias e Subcategorias
+GET /categories
+Lista categorias principais (fixas).
+
+GET /subcategories
+Lista subcategorias criadas pelo usuário.
+
+POST /subcategories
+Cria uma nova subcategoria.
+
+json
+Copiar código
+{
+  "name": "Cinema",
+  "categoryId": 2
+}
+PUT /subcategories/:id
+Atualiza nome ou categoria-pai.
+
+DELETE /subcategories/:id
+Remove uma subcategoria.
+
+📄 Relatórios (Reports)
+POST /reports/custom
+Gera relatório PDF personalizado e envia por e-mail ou download.
+
+json
+Copiar código
+{
+  "startDate": "2025-10-01",
+  "endDate": "2025-10-31",
+  "categories": [1, 2],
+  "subcategories": [10, 12],
+  "keywords": "mercado",
+  "sendEmail": true
+}
+Lógica:
+
+Filtra transações conforme os parâmetros.
+
+Gera PDF com totais de receita, despesa e saldo.
+
+Envia por e-mail (via nodemailer) ou retorna o PDF diretamente.
+
+🧠 Tecnologias Principais
+Backend: Node.js, Express, JWT, Sequelize, Nodemailer, PDFMake
+
+Frontend: React.js, React Router, Axios
+
+Banco de Dados: PostgreSQL ou MySQL
+
+Autenticação: JWT
+
+Relatórios: PDFMake
+
+E-mail: Nodemailer (SMTP)
+
+⚙️ Instalação e Execução
+bash
+Copiar código
+# Clone o repositório
+git clone https://github.com/seuusuario/MEU-CONTROLE-FINANCEIRO.git
+
+# Acesse o diretório
+cd MEU-CONTROLE-FINANCEIRO
+
+# Instale as dependências
 npm install
 
-# 3. Execute as migrations do Sequelize
-npx sequelize-cli db:migrate
+# Configure variáveis de ambiente (.env)
+# Exemplo:
+# JWT_SECRET=suachavesecreta
+# DB_USER=root
+# DB_PASS=123456
+# DB_NAME=financeiro_db
 
-# 4. (Opcional) Execute os seeders (para popular categorias, por exemplo)
-npx sequelize-cli db:seed:all
-
-# 5. Inicie o servidor
+# Execute a aplicação
 npm run dev
-O servidor backend estará rodando em http://localhost:3333 (ou a porta definida no seu server.js).3. Frontend (React)Bash# 1. Em um NOVO terminal, navegue até a pasta do frontend
-cd frontend
-
-# 2. Instale as dependências
-npm install
-
-# 3. Inicie o servidor de desenvolvimento (Vite)
-npm run dev
-A aplicação React estará disponível em http://localhost:5173.📚 Documentação da API (Resumo)Todas as rotas, exceto /register e /login, são protegidas e exigem um Token de Autenticação (Bearer <token>).MétodoEndpointDescriçãoAutenticaçãoPOST/registerRegistra um novo usuário.POST/loginAutentica um usuário e retorna um token JWT.TransaçõesGET/transactionsLista transações com filtros (datas, categorias, etc.).POST/transactionsCria uma transação (única ou recorrente).PUT/transactions/:idAtualiza uma transação (pode aplicar a futuras).DELETE/transactions/:idDeleta uma transação.DELETE/transactions/group/:groupIdDeleta transações recorrentes futuras.Orçamentos (Budgets)GET/budgetsLista orçamentos (com gasto_atual calculado).POST/budgetsCria um novo limite de orçamento para um mês/categoria.PUT/budgets/:idAtualiza um orçamento.DELETE/budgets/:idDeleta um orçamento.Metas (Goals)GET/goalsLista metas (com status e progresso calculados).POST/goalsCria uma nova meta de economia.POST/goals/:id/contributeAdiciona um aporte (contribuição) a uma meta.PUT/goals/:idAtualiza os dados de uma meta (título, valor, prazo).DELETE/goals/:idDeleta uma meta.CategoriasGET/categoriesLista as categorias principais (fixas).GET/subcategoriesLista as subcategorias criadas pelo usuário.POST/subcategoriesCria uma nova subcategoria.PUT/subcategories/:idAtualiza uma subcategoria.DELETE/subcategories/:idDeleta uma subcategoria.RelatóriosPOST/reports/customGera um relatório em PDF e envia por e-mail ou download.📄 LicençaEste projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
