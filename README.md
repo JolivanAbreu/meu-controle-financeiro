@@ -1,342 +1,165 @@
-# 💰 MEU-CONTROLE-FINANCEIRO
+# 🖥️ Sistema de Gerenciamento Escolar - Jesuit School
 
-Uma aplicação **Full-Stack Web** desenvolvida para **gerenciamento de finanças pessoais**, permitindo que usuários controlem receitas, despesas, orçamentos e metas de economia de forma simples e intuitiva.
+## 📘 Visão Geral
 
----
+O **Sistema de Gerenciamento Escolar - Jesuit School** foi desenvolvido com o objetivo de otimizar e automatizar processos administrativos e acadêmicos de uma instituição jesuíta.  
+O sistema permite realizar o **cadastro e gerenciamento de alunos, turmas, professores, disciplinas e notas**, além de gerar relatórios completos.
 
-## 🧭 Visão Geral do Sistema
-
-O **MEU-CONTROLE-FINANCEIRO** é um sistema completo para organização financeira pessoal. Ele inclui autenticação segura, categorização de gastos, orçamentos mensais, metas de economia e geração de relatórios em PDF.
-
-### ✨ Principais Funcionalidades
-
-- **Autenticação de Usuário:**  
-  Registro (`/register`) e login (`/login`) com **JWT (JSON Web Token)** para segurança.
-
-- **Gerenciamento de Transações:**  
-  CRUD completo para receitas e despesas.  
-  Suporte a transações **fixas (recorrentes)** e **variáveis (únicas)**.
-
-- **Categorização:**  
-  Categorias fixas (ex: `Moradia`, `Transporte`) e subcategorias personalizadas (ex: `Aluguel`, `Gasolina`).
-
-- **Orçamentos (Budgets):**  
-  Definição de **limites mensais por categoria**, com cálculo automático do gasto atual.
-
-- **Metas de Economia (Goals):**  
-  Criação de **metas com valor e prazo**, com cálculo de progresso e **aporte sugerido mensal**.
-
-- **Relatórios (Reports):**  
-  Geração de relatórios em **PDF** com filtros personalizados e envio automático por **e-mail (SMTP)**.
+O projeto foi desenvolvido utilizando a **linguagem Java (com JOptionPane)** e **arquitetura orientada a objetos**, prezando pela **organização modular e manutenção facilitada**.
 
 ---
 
-## 🧩 Fluxo do Usuário (Frontend)
+## 🧠 Objetivo do Projeto
 
-O fluxo de navegação é dividido em **rotas públicas** e **rotas protegidas**:
-
-### 🔓 Rotas Públicas
-| Rota | Descrição |
-|------|------------|
-| `/login` | Página de Login |
-| `/register` | Página de Registro |
-| `/` | Redireciona para `/login` |
-
-### 🔐 Rotas Protegidas (após login)
-| Rota | Descrição |
-|------|------------|
-| `/dashboard` | Página principal (DashboardPage) |
-| `/budgets` | Gerenciamento de orçamentos (BudgetsPage) |
-| `/goals` | Metas de economia (GoalsPage) |
-| `/reports` | Geração de relatórios (ReportsPage) |
-| `/categorias` | Gerenciamento de subcategorias (CategoriesPage) |
-
-> Todas as rotas protegidas são renderizadas dentro de um **MainLayout**, contendo a barra lateral de navegação.
+O sistema tem como principais objetivos:
+- Facilitar o **cadastro e gerenciamento de alunos, professores e turmas**.
+- Permitir o **lançamento de notas e geração de relatórios de desempenho**.
+- Oferecer uma interface simples e intuitiva via **JOptionPane**.
+- Garantir **armazenamento estruturado** e manipulação de dados organizada.
 
 ---
 
-## 🗄️ Modelo de Dados (Schema do Banco)
+## ⚙️ Tecnologias Utilizadas
 
-Abaixo, o modelo de entidades e relacionamentos utilizados pelo sistema:
-
-### 👤 User (Usuário)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| nome | String | Nome do usuário |
-| email | String | E-mail do usuário |
-| senha_hash | String | Senha criptografada |
-
-**Relações:**
-- 1:N → Transações  
-- 1:N → Orçamentos  
-- 1:N → Metas  
-- 1:N → Subcategorias  
-- 1:N → Contribuições de metas  
+| Tecnologia | Descrição |
+|-------------|------------|
+| **Java SE** | Linguagem principal do sistema |
+| **JOptionPane** | Interface gráfica simplificada |
+| **Orientação a Objetos (POO)** | Estrutura de desenvolvimento modular |
+| **IntelliJ IDEA** | IDE utilizada no desenvolvimento |
+| **Maven (opcional)** | Gerenciamento de dependências, se aplicado |
 
 ---
 
-### 🏷️ Category (Categoria)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| name | String | Nome da categoria (fixa) |
+## 🧩 Estrutura do Projeto
 
-**Relações:**
-- 1:N → Subcategorias  
+A estrutura de pastas foi organizada de forma modular para facilitar a manutenção e compreensão:
 
-> As categorias são **pré-definidas** no banco (ex: Moradia, Lazer, Saúde).
+System/
+│
+├── Aluno/
+│ ├── GAluno.java # Classe responsável pelo gerenciamento de alunos
+│ ├── MenuAluno.java # Menu de operações de alunos
+│
+├── Turma/
+│ ├── GTurma.java # Classe responsável pelo gerenciamento de turmas
+│ ├── MenuTurma.java # Menu de operações de turmas
+│
+├── Disciplinas/
+│ ├── GDisciplina.java # Classe de gerenciamento de disciplinas
+│ ├── MenuDisciplina.java # Menu de operações de disciplinas
+│
+├── Professor/
+│ ├── GProfessor.java # Classe responsável pelo gerenciamento de professores
+│ ├── MenuProfessor.java # Menu de operações de professores
+│
+├── Main.java # Classe principal com o menu inicial do sistema
+│
+└── ClassesExternas/
+├── Aluno.java # Classe modelo (getters e setters)
+├── Turma.java
+├── Disciplina.java
+├── Professor.java
 
----
-
-### 🪪 Subcategory (Subcategoria)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| name | String | Nome da subcategoria |
-
-**Relações:**
-- N:1 → Usuário  
-- N:1 → Categoria  
-- 1:N → Transações  
-
-> Subcategorias são **criadas e gerenciadas pelos usuários**.
-
----
-
-### 💸 Transaction (Transação)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| tipo | ENUM('receita', 'despesa') | Tipo da transação |
-| valor | Number | Valor da transação |
-| data | Date | Data da transação |
-| descricao | String | Descrição |
-| recurrence | ENUM('fixo', 'variável') | Tipo de recorrência |
-| recurrence_group_id | String | ID de grupo para parcelas |
-| recurrence_end_date | Date | Data final de recorrência |
-
-**Relações:**
-- N:1 → Usuário  
-- N:1 → Subcategoria  
-
----
-
-### 💰 Budget (Orçamento)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| categoria | String | Nome da categoria principal |
-| limite | Number | Limite mensal |
-| mes | Number | Mês de referência |
-| ano | Number | Ano de referência |
-
-**Relações:**
-- N:1 → Usuário  
-
----
-
-### 🎯 Goal (Meta)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| titulo | String | Nome da meta |
-| valor_objetivo | Number | Valor total desejado |
-| valor_atual | Number | Valor atual acumulado |
-| prazo | Date | Data limite da meta |
-
-**Relações:**
-- N:1 → Usuário  
-- 1:N → Contribuições de metas  
-
-> O sistema calcula automaticamente:  
-> `valor_restante`, `meses_restantes`, `aporte_sugerido_mes` e `status`.
-
----
-
-### 📈 GoalContribution (Aporte de Meta)
-| Campo | Tipo | Descrição |
-|--------|------|-----------|
-| valor | Number | Valor aportado |
-| data | Date | Data do aporte |
-
-**Relações:**
-- N:1 → Usuário  
-- N:1 → Meta  
-
----
-
-## 🚀 Referência da API (Endpoints)
-
-### 👤 Autenticação e Usuários
-#### `POST /register` *(Pública)*
-Registra um novo usuário.  
-```json
-{
-  "nome": "João",
-  "email": "joao@email.com",
-  "senha": "123456"
-}
-POST /login (Pública)
-Autentica o usuário e retorna um token JWT.
-
-json
+yaml
 Copiar código
-{
-  "email": "joao@email.com",
-  "senha": "123456"
-}
-💸 Transações (Transactions)
-GET /transactions (Autenticada)
-Lista transações do usuário com filtros:
-startDate, endDate, categories, subcategories, keywords.
 
-POST /transactions (Autenticada)
-Cria uma nova transação.
-Se recurrence for "fixo", cria múltiplas parcelas.
+---
 
-json
-Copiar código
-{
-  "tipo": "despesa",
-  "valor": 200,
-  "data": "2025-10-25",
-  "descricao": "Supermercado",
-  "subcategoryId": 10,
-  "recurrence": "fixo",
-  "installments": 3
-}
-PUT /transactions/:id (Autenticada)
-Atualiza uma transação (ou todas futuras com applyToFuture=true).
+## 🗄️ Banco de Dados
 
-DELETE /transactions/:id (Autenticada)
-Remove uma transação.
+> ⚠️ Atualmente, o sistema utiliza **armazenamento em memória**.  
+> Caso desejado, poderá ser integrada uma **base de dados MySQL ou SQLite**, conforme o avanço do projeto.
 
-DELETE /transactions/group/:groupId (Autenticada)
-Remove um grupo de transações recorrentes a partir de uma data específica.
+### Modelo de Dados (Lógico)
 
-📊 Orçamentos (Budgets)
-GET /budgets
-Lista orçamentos filtrados por mês/ano.
-Calcula gasto_atual automaticamente.
+| Entidade | Atributos |
+|-----------|------------|
+| **Aluno** | ID, Nome, Idade, Turma, Notas |
+| **Turma** | ID, Nome, Série, ProfessorResponsável |
+| **Professor** | ID, Nome, Disciplina, Email |
+| **Disciplina** | ID, Nome, CargaHorária |
+| **Notas** | IDAluno, IDDisciplina, Nota1, Nota2, MédiaFinal |
 
-POST /budgets
-Cria um novo orçamento.
+---
 
-json
-Copiar código
-{
-  "categoria": "Lazer",
-  "limite": 500,
-  "mes": 10,
-  "ano": 2025
-}
-PUT /budgets/:id
-Atualiza um orçamento existente.
+## 🧰 Funcionalidades
 
-DELETE /budgets/:id
-Remove um orçamento.
+✅ **Cadastro e consulta de alunos**  
+✅ **Cadastro e gerenciamento de turmas**  
+✅ **Cadastro de professores e disciplinas**  
+✅ **Lançamento e cálculo de notas**  
+✅ **Geração de relatórios**  
+✅ **Exibição via JOptionPane**  
+✅ **Estrutura modular e orientada a objetos**
 
-🎯 Metas (Goals)
-GET /goals
-Lista todas as metas com progresso calculado:
+---
 
-valor_restante
+## 🧾 Requisitos
 
-meses_restantes
+### 🖥️ Requisitos de Software
+- **Java JDK 17** ou superior  
+- **IntelliJ IDEA** (ou NetBeans / VS Code com extensão Java)  
+- (Opcional) **Maven** para gerenciamento de dependências  
 
-aporte_sugerido_mes
+### ⚙️ Requisitos de Hardware
+- Processador dual-core ou superior  
+- 2 GB de RAM livre  
+- 200 MB de espaço disponível
 
-status
+---
 
-POST /goals
-Cria uma nova meta de economia.
+## 🚀 Execução do Sistema
 
-json
-Copiar código
-{
-  "titulo": "Viagem de Férias",
-  "valor_objetivo": 10000,
-  "prazo": "2026-12-31"
-}
-POST /goals/:id/contribute
-Adiciona um aporte à meta.
+1. **Abra o projeto** na IDE de sua preferência (ex: IntelliJ IDEA).  
+2. Compile o projeto (`Build Project`).  
+3. Execute a classe principal `Main.java`.  
+4. Navegue pelos menus exibidos via `JOptionPane`.
 
-json
-Copiar código
-{
-  "valor": 500,
-  "data": "2025-10-26"
-}
-🏷️ Categorias e Subcategorias
-GET /categories
-Lista categorias principais (fixas).
+---
 
-GET /subcategories
-Lista subcategorias criadas pelo usuário.
+## 🧮 Exemplo de Menu Principal
 
-POST /subcategories
-Cria uma nova subcategoria.
+```java
+String opcao = JOptionPane.showInputDialog(
+    "===== SISTEMA ESCOLAR JESUIT SCHOOL =====\n" +
+    "1 - Gerenciar Alunos\n" +
+    "2 - Gerenciar Professores\n" +
+    "3 - Gerenciar Disciplinas\n" +
+    "4 - Gerenciar Turmas\n" +
+    "5 - Gerar Relatórios\n" +
+    "0 - Sair\n" +
+    "Escolha uma opção:"
+);
+🧠 Boas Práticas Implementadas
+Modularização por pacotes
 
-json
-Copiar código
-{
-  "name": "Cinema",
-  "categoryId": 2
-}
-PUT /subcategories/:id
-Atualiza nome ou categoria-pai.
+Encapsulamento de dados (getters e setters)
 
-DELETE /subcategories/:id
-Remove uma subcategoria.
+Métodos específicos para CRUD (Create, Read, Update, Delete)
 
-📄 Relatórios (Reports)
-POST /reports/custom
-Gera relatório PDF personalizado e envia por e-mail ou download.
+Reutilização de código por herança e composição
 
-json
-Copiar código
-{
-  "startDate": "2025-10-01",
-  "endDate": "2025-10-31",
-  "categories": [1, 2],
-  "subcategories": [10, 12],
-  "keywords": "mercado",
-  "sendEmail": true
-}
-Lógica:
+Organização clara da estrutura do projeto
 
-Filtra transações conforme os parâmetros.
+📈 Possíveis Melhorias Futuras
+🔐 Integração com banco de dados MySQL
 
-Gera PDF com totais de receita, despesa e saldo.
+🌐 Criação de interface web (Java + Spring Boot)
 
-Envia por e-mail (via nodemailer) ou retorna o PDF diretamente.
+🧾 Exportação de relatórios em PDF
 
-🧠 Tecnologias Principais
-Backend: Node.js, Express, JWT, Sequelize, Nodemailer, PDFMake
+📬 Envio de notificações por e-mail
 
-Frontend: React.js, React Router, Axios
+🧑‍💼 Login de usuários com níveis de permissão
 
-Banco de Dados: PostgreSQL ou MySQL
+👨‍💻 Autor
+Jô Abreu
+Estudante de Análise e Desenvolvimento de Sistemas - Unifametro
+Técnico em Desenvolvimento de Sistemas - SENAI
+💼 Foco em desenvolvimento back-end, redes e infraestrutura
+📧 Contato: (inserir e-mail, se desejar)
 
-Autenticação: JWT
-
-Relatórios: PDFMake
-
-E-mail: Nodemailer (SMTP)
-
-⚙️ Instalação e Execução
-bash
-Copiar código
-# Clone o repositório
-git clone https://github.com/seuusuario/MEU-CONTROLE-FINANCEIRO.git
-
-# Acesse o diretório
-cd MEU-CONTROLE-FINANCEIRO
-
-# Instale as dependências
-npm install
-
-# Configure variáveis de ambiente (.env)
-# Exemplo:
-# JWT_SECRET=suachavesecreta
-# DB_USER=root
-# DB_PASS=123456
-# DB_NAME=financeiro_db
-
-# Execute a aplicação
-npm run dev
+📜 Licença
+Este projeto é de uso acadêmico e pode ser adaptado livremente para fins educacionais.
+© 2025 Jô Abreu. Todos os direitos reservados.
