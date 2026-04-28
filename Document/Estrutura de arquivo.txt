@@ -1,0 +1,93 @@
+MEU-CONTROLE-FINANCEIRO/
+├── backend/
+│   ├── __tests__/
+│   ├── node_modules/
+│   ├── src/
+│   │   ├── config/
+│   │   │   └── database.js
+│   │   ├── controllers/
+│   │   │   ├── BudgetController.js
+│   │   │   ├── CategoryController.js
+│   │   │   ├── GoalController.js
+│   │   │   ├── SessionController.js
+│   │   │   ├── SubcategoryController.js
+│   │   │   ├── TransactionController.js
+│   │   │   └── UserController.js
+│   │   ├── database/
+│   │   │   ├── migrations/
+│   │   │   │   ├── 20250915203400-create-users.js
+│   │   │   │   ├── 20250916120746-create-transactions.js
+│   │   │   │   ├── 20250917163406-create-budgets.js
+│   │   │   │   ├── 20250917175408-create-goals.js
+│   │   │   │   ├── 20251019162305-add-recurrence-to-transactions.js
+│   │   │   │   ├── 20251019165932-add-recurrence-end-date-to-transactions.js
+│   │   │   │   ├── 20251021210833-create-categories.js
+│   │   │   │   ├── 20251021211104-create-subcategories.js
+│   │   │   │   ├── 20251021211121-update-transactions-add-subcategory.js
+│   │   │   │   └── 20251021222741-cleanup-remove-categoria-column.js
+│   │   │   ├── seeders/
+│   │   │   │   └── 20251021211032-seed-default-categories.js
+│   │   │   └── index.js
+│   │   ├── middlewares/
+│   │   │   └── auth.js
+│   │   ├── models/
+│   │   │   ├── Budget.js
+│   │   │   ├── Category.js
+│   │   │   ├── Goal.js
+│   │   │   ├── Subcategory.js
+│   │   │   ├── Transaction.js
+│   │   │   └── User.js
+│   │   ├── routes/
+│   │   │   └── routes.js
+│   │   ├── .gitignore
+│   │   ├── app.js
+│   │   ├── server.js
+│   │   └── .env
+│   ├── .sequelizerc
+│   ├── package-lock.json
+│   └── package.json
+├── backend - Copia/
+├── Document/
+├── frontend/
+│   ├── node_modules/
+│   ├── public/
+│   ├── src/
+│   │   ├── assets/
+│   │   │   └── react.svg
+│   │   ├── components/
+│   │   │   ├── BudgetForm.jsx
+│   │   │   ├── ExpensesChart.jsx
+│   │   │   ├── GoalForm.jsx
+│   │   │   ├── MainLayout.jsx
+│   │   │   ├── MobileHeader.jsx
+│   │   │   ├── Modal.jsx
+│   │   │   ├── ProtectedRoute.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   └── TransactionForm.jsx
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx
+│   │   ├── pages/
+│   │   │   ├── BudgetsPage.jsx
+│   │   │   ├── CategoriesPage.jsx
+│   │   │   ├── DashboardPage.jsx
+│   │   │   ├── GoalsPage.jsx
+│   │   │   ├── LoginPage.jsx
+│   │   │   ├── RegisterPage.jsx
+│   │   │   └── ReportsPage.jsx
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   └── categoryService.js
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── .gitignore
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── README.md
+│   ├── tailwind.config.js
+│   └── vite.config.js
+├── docker-compose.yml
+└── requests.http
