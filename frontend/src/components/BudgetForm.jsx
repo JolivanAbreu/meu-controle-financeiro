@@ -19,11 +19,22 @@ const meses = [
   { nome: "Dezembro", valor: 12 },
 ];
 
-function BudgetForm({ onSuccess, initialData }) {
+const inputClasses =
+  "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
+  "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
+  "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
+  "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent " +
+  "transition-colors";
+
+const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
+
+// NOVO: recebe defaultMes/defaultAno da página (mês/ano que o usuário está filtrando),
+// usados apenas ao criar um orçamento novo (initialData ausente).
+function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
   const [categoria, setCategoria] = useState("");
   const [limite, setLimite] = useState("");
-  const [mes, setMes] = useState(new Date().getMonth() + 1);
-  const [ano, setAno] = useState(new Date().getFullYear());
+  const [mes, setMes] = useState(defaultMes || new Date().getMonth() + 1);
+  const [ano, setAno] = useState(defaultAno || new Date().getFullYear());
 
   useEffect(() => {
     if (initialData) {
@@ -31,8 +42,11 @@ function BudgetForm({ onSuccess, initialData }) {
       setLimite(initialData.limite);
       setMes(initialData.mes);
       setAno(initialData.ano);
+    } else {
+      setMes(defaultMes || new Date().getMonth() + 1);
+      setAno(defaultAno || new Date().getFullYear());
     }
-  }, [initialData]);
+  }, [initialData, defaultMes, defaultAno]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -65,37 +79,33 @@ function BudgetForm({ onSuccess, initialData }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Categoria
-        </label>
+        <label className={labelClasses}>Categoria</label>
         <input
           type="text"
           required
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
+          className={inputClasses}
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Limite (R$)
-        </label>
+        <label className={labelClasses}>Limite (R$)</label>
         <input
           type="number"
           step="0.01"
           required
           value={limite}
           onChange={(e) => setLimite(e.target.value)}
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
+          className={`${inputClasses} font-mono`}
         />
       </div>
       <div className="flex gap-4">
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Mês</label>
+          <label className={labelClasses}>Mês</label>
           <select
             value={mes}
             onChange={(e) => setMes(e.target.value)}
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
+            className={inputClasses}
           >
             {meses.map((m) => (
               <option key={m.valor} value={m.valor}>
@@ -105,20 +115,20 @@ function BudgetForm({ onSuccess, initialData }) {
           </select>
         </div>
         <div className="flex-1">
-          <label className="block text-sm font-medium text-gray-700">Ano</label>
+          <label className={labelClasses}>Ano</label>
           <input
             type="number"
             required
             value={ano}
             onChange={(e) => setAno(e.target.value)}
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
+            className={`${inputClasses} font-mono`}
           />
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-2">
         <button
           type="submit"
-          className="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+          className="px-4 py-2 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity"
         >
           Salvar Orçamento
         </button>

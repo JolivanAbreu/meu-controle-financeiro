@@ -4,9 +4,36 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 import toast from "react-hot-toast";
 import { getCategories, getSubcategories } from "../services/categoryService";
+import { FaArrowDown, FaArrowUp } from "react-icons/fa";
+
+const inputClasses =
+  "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
+  "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
+  "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
+  "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent " +
+  "disabled:bg-rule/40 dark:disabled:bg-rule-dark/40 disabled:text-ink-soft dark:disabled:text-ink-soft-dark " +
+  "transition-colors";
+
+const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
+
+// Botão de um seletor segmentado (usado para Tipo e Recorrência)
+function SegmentButton({ active, activeClasses, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center justify-center gap-2 py-2.5 px-2 rounded-lg text-sm font-medium border transition-colors ${
+        active
+          ? activeClasses
+          : "border-rule dark:border-rule-dark text-ink-soft dark:text-ink-soft-dark hover:bg-paper dark:hover:bg-paper-dark"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 function TransactionForm({ onSuccess, initialData }) {
-
   const [tipo, setTipo] = useState("despesa");
   const [valor, setValor] = useState("");
   const [data, setData] = useState(new Date().toISOString().split("T")[0]);
@@ -38,11 +65,11 @@ function TransactionForm({ onSuccess, initialData }) {
     }
     loadCategoryData();
   }, []);
--
+
   useEffect(() => {
     if (!dataLoading && initialData) {
       const { tipo, valor, data, descricao, recurrence, subcategory } = initialData;
-      
+
       setTipo(tipo);
       setValor(valor);
       setData(new Date(data).toISOString().split("T")[0]);
@@ -51,14 +78,14 @@ function TransactionForm({ onSuccess, initialData }) {
 
       if (subcategory) {
         const parentCategoryId = subcategory.category_id;
-        
+
         setSelectedCategory(parentCategoryId);
 
         const relevantSubcategories = allSubcategories.filter(
           (sc) => sc.categoryId === parentCategoryId
         );
         setFilteredSubcategories(relevantSubcategories);
-        
+
         setSelectedSubcategory(subcategory.id);
       }
     } else if (!initialData) {
@@ -134,125 +161,176 @@ function TransactionForm({ onSuccess, initialData }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4"> {}
-      {}
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Tipo + Valor */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Tipo</label>
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value)}
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          >
-            <option value="despesa">Despesa</option>
-            <option value="receita">Receita</option>
-          </select>
+          <label className={labelClasses}>Tipo</label>
+          <div className="grid grid-cols-2 gap-2 mt-1">
+            <SegmentButton
+              active={tipo === "despesa"}
+              activeClasses="bg-despesa dark:bg-despesa-dark text-paper-raised dark:text-paper-dark border-despesa dark:border-despesa-dark"
+              onClick={() => setTipo("despesa")}
+            >
+              <FaArrowDown size={11} /> Despesa
+            </SegmentButton>
+            <SegmentButton
+              active={tipo === "receita"}
+              activeClasses="bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark border-receita dark:border-receita-dark"
+              onClick={() => setTipo("receita")}
+            >
+              <FaArrowUp size={11} /> Receita
+            </SegmentButton>
+          </div>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Valor (R$)</label>
-          <input
-            type="number" step="0.01" required value={valor}
-            onChange={(e) => setValor(e.target.value)}
-            placeholder="0,00"
-            className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-          />
+          <label className={labelClasses}>Valor</label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft dark:text-ink-soft-dark font-mono text-sm pointer-events-none">
+              R$
+            </span>
+            <input
+              type="number"
+              step="0.01"
+              required
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="0,00"
+              className={`${inputClasses} mt-0 pl-9 font-mono text-base font-medium`}
+            />
+          </div>
         </div>
       </div>
 
-      {/* --- CAMPOS DE CATEGORIA SUBSTITUÍDOS --- */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Categoria</label>
-        <select
-          value={selectedCategory}
-          onChange={handleCategoryChange}
-          disabled={dataLoading}
-          required
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-        >
-          <option value="">{dataLoading ? "Carregando..." : "Selecione uma categoria"}</option>
-          {allCategories.map((cat) => (
-            <option key={cat.id} value={cat.id}>{cat.name}</option>
-          ))}
-        </select>
+      {/* Categoria / Subcategoria agrupadas */}
+      <div className="rounded-lg border border-rule dark:border-rule-dark p-4 space-y-4">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft dark:text-ink-soft-dark">
+          Classificação
+        </p>
+        <div>
+          <label className={labelClasses}>Categoria</label>
+          <select
+            value={selectedCategory}
+            onChange={handleCategoryChange}
+            disabled={dataLoading}
+            required
+            className={inputClasses}
+          >
+            <option value="">
+              {dataLoading ? "Carregando..." : "Selecione uma categoria"}
+            </option>
+            {allCategories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className={labelClasses}>Subcategoria</label>
+          <select
+            value={selectedSubcategory}
+            onChange={(e) => setSelectedSubcategory(e.target.value)}
+            disabled={!selectedCategory || filteredSubcategories.length === 0}
+            required
+            className={inputClasses}
+          >
+            <option value="">
+              {selectedCategory ? "Selecione uma subcategoria" : "Escolha uma categoria"}
+            </option>
+            {filteredSubcategories.map((sub) => (
+              <option key={sub.id} value={sub.id}>
+                {sub.name}
+              </option>
+            ))}
+          </select>
+          {selectedCategory && filteredSubcategories.length === 0 && (
+            <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1">
+              Nenhuma subcategoria. Adicione uma na página "Gerenciar Categorias".
+            </p>
+          )}
+        </div>
       </div>
 
+      {/* Descrição (Opcional) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">Subcategoria</label>
-        <select
-          value={selectedSubcategory}
-          onChange={(e) => setSelectedSubcategory(e.target.value)}
-          disabled={!selectedCategory || filteredSubcategories.length === 0}
-          required
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100"
-        >
-          <option value="">{selectedCategory ? "Selecione uma subcategoria" : "Escolha uma categoria"}</option>
-          {filteredSubcategories.map((sub) => (
-            <option key={sub.id} value={sub.id}>{sub.name}</option>
-          ))}
-        </select>
-        {selectedCategory && filteredSubcategories.length === 0 && (
-          <p className="text-xs text-gray-500 mt-1">
-            Nenhuma subcategoria. Adicione uma na página "Gerenciar Categorias".
-          </p>
-        )}
-      </div>
-      
-      {/* Campo de Descrição (Opcional) */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Descrição (Opcional)</label>
+        <label className={labelClasses}>Descrição (Opcional)</label>
         <input
-          type="text" value={descricao}
+          type="text"
+          value={descricao}
           onChange={(e) => setDescricao(e.target.value)}
           placeholder="Ex: Compras do mês"
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className={inputClasses}
         />
       </div>
 
-      {/* Campo de Data */}
+      {/* Data */}
       <div>
-        <label className="block text-sm font-medium text-gray-700">{recurrence === "fixo" ? "Data do Primeiro Vencimento" : "Data"}</label>
+        <label className={labelClasses}>
+          {recurrence === "fixo" ? "Data do Primeiro Vencimento" : "Data"}
+        </label>
         <input
-          type="date" required value={data}
+          type="date"
+          required
+          value={data}
           onChange={(e) => setData(e.target.value)}
-          className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          className={`${inputClasses} font-mono`}
         />
       </div>
 
-      {/* Mantém sua Lógica de Recorrência */}
+      {/* Recorrência */}
       {!initialData && (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Recorrência</label>
-            <div className="flex items-center mt-2 space-x-6">
-              <div className="flex items-center">
-                <input id="variável" name="recurrence" type="radio" value="variável" checked={recurrence === "variável"} onChange={(e) => setRecurrence(e.target.value)} className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
-                <label htmlFor="variável" className="block ml-2 text-sm text-gray-900">Variável (Única)</label>
-              </div>
-              <div className="flex items-center">
-                <input id="fixo" name="recurrence" type="radio" value="fixo" checked={recurrence === "fixo"} onChange={(e) => setRecurrence(e.target.value)} className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
-                <label htmlFor="fixo" className="block ml-2 text-sm text-gray-900">Fixo (Recorrente)</label>
-              </div>
+            <label className={labelClasses}>Recorrência</label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <SegmentButton
+                active={recurrence === "variável"}
+                activeClasses="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark border-accent dark:border-accent-dark"
+                onClick={() => setRecurrence("variável")}
+              >
+                Variável (Única)
+              </SegmentButton>
+              <SegmentButton
+                active={recurrence === "fixo"}
+                activeClasses="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark border-accent dark:border-accent-dark"
+                onClick={() => setRecurrence("fixo")}
+              >
+                Fixo (Recorrente)
+              </SegmentButton>
             </div>
           </div>
           {recurrence === "fixo" && (
             <div>
-              <label htmlFor="installments" className="block text-sm font-medium text-gray-700">Quantidade de Meses</label>
-              <input type="number" id="installments" value={installments} onChange={(e) => setInstallments(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" required={recurrence === "fixo"} min="1" max="120" />
-              <p className="text-xs text-gray-500 mt-1">A transação será replicada por {installments || 0} meses.</p>
+              <label htmlFor="installments" className={labelClasses}>
+                Quantidade de Meses
+              </label>
+              <input
+                type="number"
+                id="installments"
+                value={installments}
+                onChange={(e) => setInstallments(e.target.value)}
+                className={`${inputClasses} font-mono`}
+                required={recurrence === "fixo"}
+                min="1"
+                max="120"
+              />
+              <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1">
+                A transação será replicada por {installments || 0} meses.
+              </p>
             </div>
           )}
         </>
       )}
 
       {/* Botão de Submit */}
-      <div className="flex justify-end pt-2">
-        <button
-          type="submit"
-          className="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          {initialData ? "Atualizar Transação" : "Salvar Transação"}
-        </button>
-      </div>
+      <button
+        type="submit"
+        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
+        {initialData ? "Atualizar Transação" : "Salvar Transação"}
+      </button>
     </form>
   );
 }

@@ -9,15 +9,12 @@ function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {}
+    <div className="flex h-screen bg-paper dark:bg-paper-dark transition-colors duration-300">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {}
         <MobileHeader onMenuClick={() => setIsSidebarOpen(true)} />
 
-        {}
         <main className="flex-grow p-4 md:p-8 overflow-y-auto">
           <Outlet />
         </main>

@@ -9,12 +9,12 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#AF19FF",
-  "#FF4560",
+  "#3E6B52",
+  "#6B8F7A",
+  "#A2432E",
+  "#C77B5F",
+  "#2E4A5C",
+  "#B8BFB3",
 ];
 
 const ExpensesChart = ({ transactions }) => {
@@ -46,7 +46,7 @@ const ExpensesChart = ({ transactions }) => {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center text-gray-400 italic">
+      <div className="flex h-64 items-center justify-center text-ink-soft italic text-sm">
         Nenhuma despesa para este período.
       </div>
     );
@@ -78,18 +78,31 @@ const ExpensesChart = ({ transactions }) => {
             formatter={(value) => formatCurrency(value)}
             contentStyle={{
               borderRadius: "8px",
-              border: "none",
+              border: "1px solid #C9CFC5",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+              fontFamily: "IBM Plex Sans, sans-serif",
+              fontSize: "13px",
             }}
           />
-          <Legend verticalAlign="bottom" height={36} iconType="circle" />
+          <Legend
+            verticalAlign="bottom"
+            height={36}
+            iconType="circle"
+            wrapperStyle={{
+              fontFamily: "IBM Plex Sans, sans-serif",
+              fontSize: "12.5px",
+              color: "#4B5B59",
+            }}
+          />
         </PieChart>
       </ResponsiveContainer>
 
       {/* Texto no centro do Donut */}
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-        <span className="text-gray-400 text-sm font-medium">Total</span>
-        <span className="text-xl font-bold text-gray-800">
+        <span className="text-ink-soft text-xs uppercase tracking-wider font-medium">
+          Total
+        </span>
+        <span className="font-mono text-xl font-medium text-ink">
           {formatCurrency(totalDespesas)}
         </span>
       </div>

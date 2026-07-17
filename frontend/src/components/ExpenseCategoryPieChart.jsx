@@ -87,14 +87,14 @@ function ExpenseCategoryPieChart({ transactions }) {
             activeIndex={activeIndex}
             activeShape={renderActiveShape}
             data={data}
-            cx="50%" // Centro X
-            cy="50%" // Centro Y
-            innerRadius={60} // Raio interno (para fazer um "donut")
-            outerRadius={90} // Raio externo
+            cx="50%"
+            cy="50%"
+            innerRadius={60}
+            outerRadius={90}
             fill="#8884d8"
-            dataKey="value" // Chave dos dados que representa o valor
+            dataKey="value" 
             onMouseEnter={onPieEnter}
-            paddingAngle={2} // Espaço entre fatias
+            paddingAngle={2}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

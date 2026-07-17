@@ -1,11 +1,37 @@
 // frontend/src/pages/BudgetsPage.jsx
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import api from "../services/api";
 import Modal from "../components/Modal";
 import BudgetForm from "../components/BudgetForm";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
+
+const MESES = [
+  { nome: "Janeiro", valor: 1 },
+  { nome: "Fevereiro", valor: 2 },
+  { nome: "Março", valor: 3 },
+  { nome: "Abril", valor: 4 },
+  { nome: "Maio", valor: 5 },
+  { nome: "Junho", valor: 6 },
+  { nome: "Julho", valor: 7 },
+  { nome: "Agosto", valor: 8 },
+  { nome: "Setembro", valor: 9 },
+  { nome: "Outubro", valor: 10 },
+  { nome: "Novembro", valor: 11 },
+  { nome: "Dezembro", valor: 12 },
+];
+
+const ANOS = Array.from(
+  { length: 5 },
+  (_, i) => new Date().getFullYear() - 2 + i,
+);
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value);
 
 function BudgetsPage() {
   const [budgets, setBudgets] = useState([]);
@@ -13,18 +39,28 @@ function BudgetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
 
+  // --- NOVO: filtro de mês/ano (o endpoint já suporta, só não era usado aqui) ---
+  const [mesSelecionado, setMesSelecionado] = useState(
+    new Date().getMonth() + 1,
+  );
+  const [anoSelecionado, setAnoSelecionado] = useState(
+    new Date().getFullYear(),
+  );
+
   const fetchBudgets = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get("/budgets");
+      const response = await api.get("/budgets", {
+        params: { mes: mesSelecionado, ano: anoSelecionado },
+      });
       setBudgets(response.data);
     } catch (error) {
       console.error("Falha ao buscar orçamentos:", error);
-      alert("Não foi possível carregar os orçamentos.");
+      toast.error("Não foi possível carregar os orçamentos.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [mesSelecionado, anoSelecionado]);
 
   useEffect(() => {
     fetchBudgets();
@@ -61,25 +97,126 @@ function BudgetsPage() {
     }
   };
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
+  // --- NOVO: resumo do período selecionado ---
+  const summary = useMemo(() => {
+    const totalLimite = budgets.reduce(
+      (sum, b) => sum + parseFloat(b.limite || 0),
+      0,
+    );
+    const totalGasto = budgets.reduce(
+      (sum, b) => sum + parseFloat(b.gasto_atual || 0),
+      0,
+    );
+    const percentual = totalLimite > 0 ? (totalGasto / totalLimite) * 100 : 0;
+    const ultrapassados = budgets.filter(
+      (b) => b.limite > 0 && b.gasto_atual / b.limite > 1,
+    ).length;
+    return { totalLimite, totalGasto, percentual, ultrapassados };
+  }, [budgets]);
 
-  if (loading) return <p>Carregando orçamentos...</p>;
+  // --- NOVO: ordena pelos orçamentos mais "no limite" primeiro ---
+  const sortedBudgets = useMemo(() => {
+    return [...budgets].sort((a, b) => {
+      const pctA = a.limite > 0 ? a.gasto_atual / a.limite : 0;
+      const pctB = b.limite > 0 ? b.gasto_atual / b.limite : 0;
+      return pctB - pctA;
+    });
+  }, [budgets]);
+
+  if (loading) {
+    return (
+      <div className="max-w-6xl mx-auto p-4 md:p-8 text-ink-soft dark:text-ink-soft-dark">
+        Carregando orçamentos...
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Meus Orçamentos</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
-        >
-          + Novo Orçamento
-        </button>
+    <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="font-display text-3xl font-medium text-ink dark:text-ink-dark">
+            Meus Orçamentos
+          </h1>
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark mt-1">
+            Defina limites de gasto por categoria e acompanhe o período
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <select
+            value={mesSelecionado}
+            onChange={(e) => setMesSelecionado(Number(e.target.value))}
+            className="border border-rule dark:border-rule-dark rounded-lg px-3 py-2 bg-paper-raised dark:bg-paper-raised-dark text-sm text-ink dark:text-ink-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            {MESES.map((m) => (
+              <option key={m.valor} value={m.valor}>
+                {m.nome}
+              </option>
+            ))}
+          </select>
+          <select
+            value={anoSelecionado}
+            onChange={(e) => setAnoSelecionado(Number(e.target.value))}
+            className="border border-rule dark:border-rule-dark rounded-lg px-3 py-2 bg-paper-raised dark:bg-paper-raised-dark text-sm text-ink dark:text-ink-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            {ANOS.map((a) => (
+              <option key={a} value={a}>
+                {a}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
+          >
+            + Novo Orçamento
+          </button>
+        </div>
       </div>
+
+      {/* NOVO: Resumo do período */}
+      {budgets.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-4">
+            <p className="text-[11px] font-medium text-ink-soft dark:text-ink-soft-dark uppercase tracking-wider">
+              Total planejado
+            </p>
+            <p className="font-mono text-lg font-medium text-ink dark:text-ink-dark mt-1">
+              {formatCurrency(summary.totalLimite)}
+            </p>
+          </div>
+          <div className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-4">
+            <p className="text-[11px] font-medium text-ink-soft dark:text-ink-soft-dark uppercase tracking-wider">
+              Total gasto
+            </p>
+            <p className="font-mono text-lg font-medium text-despesa dark:text-despesa-dark mt-1">
+              {formatCurrency(summary.totalGasto)}
+            </p>
+          </div>
+          <div className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-4">
+            <p className="text-[11px] font-medium text-ink-soft dark:text-ink-soft-dark uppercase tracking-wider">
+              % utilizado
+            </p>
+            <p
+              className={`font-mono text-lg font-medium mt-1 ${
+                summary.percentual > 100
+                  ? "text-despesa dark:text-despesa-dark"
+                  : "text-accent dark:text-accent-dark"
+              }`}
+            >
+              {summary.percentual.toFixed(1)}%
+            </p>
+          </div>
+          <div className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-4">
+            <p className="text-[11px] font-medium text-ink-soft dark:text-ink-soft-dark uppercase tracking-wider">
+              Ultrapassados
+            </p>
+            <p className="font-mono text-lg font-medium text-ink dark:text-ink-dark mt-1">
+              {summary.ultrapassados} de {budgets.length}
+            </p>
+          </div>
+        </div>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -89,62 +226,93 @@ function BudgetsPage() {
         <BudgetForm
           onSuccess={handleBudgetSuccess}
           initialData={editingBudget}
+          defaultMes={mesSelecionado}
+          defaultAno={anoSelecionado}
         />
       </Modal>
 
       {budgets.length === 0 ? (
-        <p className="text-gray-500">Nenhum orçamento encontrado.</p>
+        <p className="text-ink-soft dark:text-ink-soft-dark text-center py-10">
+          Nenhum orçamento encontrado para este período.{" "}
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="text-accent dark:text-accent-dark hover:underline"
+          >
+            Criar o primeiro
+          </button>
+        </p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {budgets.map((budget) => {
-            const percentualGasto = (budget.gasto_atual / budget.limite) * 100;
-            const progressBarColor =
-              percentualGasto > 100 ? "bg-red-500" : "bg-blue-500";
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedBudgets.map((budget) => {
+            const percentualGasto =
+              budget.limite > 0 ? (budget.gasto_atual / budget.limite) * 100 : 0;
+            const isOver = percentualGasto > 100;
 
             return (
               <div
                 key={budget.id}
-                className="bg-white p-4 rounded-lg shadow-md"
+                className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-5"
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="text-lg font-semibold">
+                    <h3 className="font-display text-lg font-medium text-ink dark:text-ink-dark">
                       {budget.categoria}
                     </h3>
-                    <span className="text-sm text-gray-500">
-                      {budget.mes}/{budget.ano}
+                    <span className="text-xs text-ink-soft dark:text-ink-soft-dark">
+                      {MESES.find((m) => m.valor === budget.mes)?.nome} / {budget.ano}
                     </span>
                   </div>
-                  <div className="flex gap-3 text-gray-500">
+                  <div className="flex gap-1">
                     <button
                       onClick={() => handleEdit(budget)}
-                      className="hover:text-blue-700"
+                      aria-label="Editar orçamento"
+                      className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-accent dark:hover:text-accent-dark hover:bg-accent-soft dark:hover:bg-accent-soft-dark rounded-full transition-colors"
                     >
-                      <FaEdit />
+                      <FaEdit size={14} />
                     </button>
                     <button
                       onClick={() => handleDelete(budget.id)}
-                      className="hover:text-red-700"
+                      aria-label="Excluir orçamento"
+                      className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-despesa dark:hover:text-despesa-dark hover:bg-despesa-soft dark:hover:bg-despesa-soft-dark rounded-full transition-colors"
                     >
-                      <FaTrash />
+                      <FaTrash size={13} />
                     </button>
                   </div>
                 </div>
-                <p className="text-gray-600">
-                  {formatCurrency(budget.gasto_atual)} /{" "}
-                  <span className="font-medium">
-                    {formatCurrency(budget.limite)}
+
+                <div className="flex justify-between items-baseline text-sm mb-1.5">
+                  <span className="font-mono text-ink dark:text-ink-dark">
+                    {formatCurrency(budget.gasto_atual)} /{" "}
+                    <span className="font-medium">
+                      {formatCurrency(budget.limite)}
+                    </span>
                   </span>
-                </p>
-                <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
-                  <div
-                    className={`h-4 rounded-full ${progressBarColor}`}
-                    style={{ width: `${Math.min(percentualGasto, 100)}%` }}
-                  ></div>
+                  <span
+                    className={`font-medium text-xs ${
+                      isOver
+                        ? "text-despesa dark:text-despesa-dark"
+                        : "text-ink-soft dark:text-ink-soft-dark"
+                    }`}
+                  >
+                    {percentualGasto.toFixed(0)}%
+                  </span>
                 </div>
-                {percentualGasto > 100 && (
-                  <p className="text-red-600 text-sm mt-1">
-                    Orçamento ultrapassado!
+
+                <div className="w-full bg-rule dark:bg-rule-dark rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${
+                      isOver
+                        ? "bg-despesa dark:bg-despesa-dark"
+                        : "bg-accent dark:bg-accent-dark"
+                    }`}
+                    style={{ width: `${Math.min(percentualGasto, 100)}%` }}
+                  />
+                </div>
+
+                {isOver && (
+                  <p className="text-despesa dark:text-despesa-dark text-xs mt-2">
+                    Orçamento ultrapassado em{" "}
+                    {formatCurrency(budget.gasto_atual - budget.limite)}
                   </p>
                 )}
               </div>

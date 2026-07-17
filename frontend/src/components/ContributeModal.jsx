@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import Modal from './Modal';
-import { addGoalContribution } from '../services/goalService'; // Importar service
+import { addGoalContribution } from '../services/goalService'; 
 // Importar getAccounts para Upgrade 2
 // import { getAccounts } from '../services/accountService';
 
@@ -44,7 +44,7 @@ function ContributeModal({ isOpen, onClose, goal, onSuccess }) {
                 success: 'Aporte registrado com sucesso!',
                 error: (err) => err.response?.data?.error || 'Falha ao registrar aporte.',
             });
-            onSuccess(response.data); // Passa a meta ATUALIZADA para a página pai
+            onSuccess(response.data);
         } catch (error) {
             console.error("Erro ao adicionar aporte:", error);
         } finally {

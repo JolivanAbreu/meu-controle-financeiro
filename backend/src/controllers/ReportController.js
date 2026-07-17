@@ -15,6 +15,24 @@ const User = require("../models/User");
 
 const fontsPath = path.join(__dirname, '..', 'fonts');
 
+// Paleta usada no PDF, alinhada ao visual do app (papel/tinta)
+const BRAND = {
+    ink: "#1C2B2A",
+    inkSoft: "#4B5B59",
+    rule: "#C9CFC5",
+    receita: "#2F6B4F",
+    despesa: "#A2432E",
+    headerBg: "#17241F",
+    headerText: "#F4F5F0",
+    zebra: "#F2F1EB",
+    receitaSoft: "#DCE8DF",
+    despesaSoft: "#F0DDD5",
+    accentSoft: "#DCE5E9",
+};
+
+const formatBRL = (value) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
 class ReportController {
     constructor() {
         this.generate = this.generate.bind(this);
@@ -148,37 +166,174 @@ class ReportController {
 
         const printer = new PdfPrinter(fonts);
 
+        // Agrupa as transações por categoria (mantém a ordem alfabética)
+        const grouped = transactions.reduce((acc, t) => {
+            const categoryName = t.subcategory?.category?.name || "Sem categoria";
+            if (!acc[categoryName]) acc[categoryName] = [];
+            acc[categoryName].push(t);
+            return acc;
+        }, {});
+
         let totalReceitas = 0;
         let totalDespesas = 0;
+
         const tableBody = [
-            [{ text: "Data", style: "tableHeader" }, { text: "Categoria", style: "tableHeader" }, { text: "Descrição", style: "tableHeader" }, { text: "Valor", style: "tableHeader" },],
+            [
+                { text: "Data", style: "tableHeader" },
+                { text: "Descrição", style: "tableHeader" },
+                { text: "Tipo", style: "tableHeader" },
+                { text: "Valor", style: "tableHeader", alignment: "right" },
+            ],
         ];
-        transactions.forEach((t) => {
-            const categoryName = t.subcategory?.category?.name || 'N/A';
-            const subcategoryName = t.subcategory?.name || 'N/A';
-            const valor = parseFloat(t.valor);
-            const isReceita = t.tipo === "receita";
-            if (isReceita) { totalReceitas += valor; } else { totalDespesas += valor; }
-            tableBody.push([
-                format(parseISO(t.data), "dd/MM/yyyy"),
-                `${categoryName} / ${subcategoryName}`,
-                t.descricao || "-",
-                { text: (isReceita ? "+ " : "- ") + valor.toFixed(2), style: isReceita ? "receita" : "despesa", alignment: "right", },
-            ]);
-        });
+
+        Object.keys(grouped)
+            .sort((a, b) => a.localeCompare(b, "pt-BR"))
+            .forEach((categoryName) => {
+                const items = grouped[categoryName];
+                let categoryTotal = 0;
+
+                // Cabeçalho da categoria (linha ocupando as 4 colunas)
+                tableBody.push([
+                    {
+                        text: categoryName,
+                        colSpan: 4,
+                        fillColor: BRAND.zebra,
+                        bold: true,
+                        fontSize: 10,
+                        margin: [0, 4, 0, 4],
+                    },
+                    {}, {}, {},
+                ]);
+
+                items.forEach((t) => {
+                    const valor = parseFloat(t.valor);
+                    const isReceita = t.tipo === "receita";
+                    if (isReceita) {
+                        totalReceitas += valor;
+                        categoryTotal += valor;
+                    } else {
+                        totalDespesas += valor;
+                        categoryTotal -= valor;
+                    }
+
+                    const descricao = t.descricao || t.subcategory?.name || "-";
+                    const recorrenteTag = t.recurrence === "fixo" ? "  (recorrente)" : "";
+
+                    tableBody.push([
+                        format(parseISO(t.data), "dd/MM/yyyy"),
+                        `${descricao}${recorrenteTag}`,
+                        isReceita ? "Receita" : "Despesa",
+                        {
+                            text: (isReceita ? "+ " : "- ") + formatBRL(valor),
+                            style: isReceita ? "receita" : "despesa",
+                            alignment: "right",
+                        },
+                    ]);
+                });
+
+                // Subtotal da categoria
+                tableBody.push([
+                    { text: "", colSpan: 3, border: [false, false, false, true] }, {}, {},
+                    {
+                        text: `Subtotal: ${formatBRL(categoryTotal)}`,
+                        italics: true,
+                        fontSize: 8,
+                        color: BRAND.inkSoft,
+                        alignment: "right",
+                        border: [false, false, false, true],
+                    },
+                ]);
+            });
+
         const saldo = totalReceitas - totalDespesas;
-        tableBody.push([{ text: "", colSpan: 2, border: [false, true, false, false] }, {}, { text: "TOTAL RECEITAS:", bold: true, alignment: "right" }, { text: totalReceitas.toFixed(2), style: "receita", alignment: "right" },]);
-        tableBody.push([{ text: "", colSpan: 2, border: [false, false, false, false] }, {}, { text: "TOTAL DESPESAS:", bold: true, alignment: "right" }, { text: `-${totalDespesas.toFixed(2)}`, style: "despesa", alignment: "right" },]);
-        tableBody.push([{ text: "", colSpan: 2, border: [false, false, false, false] }, {}, { text: "SALDO DO PERÍODO:", bold: true, alignment: "right" }, { text: saldo.toFixed(2), style: saldo >= 0 ? "receita" : "despesa", bold: true, alignment: "right", },]);
+
         const docDefinition = {
+            pageMargins: [40, 85, 40, 60],
+
+            // Faixa escura no topo de cada página, com a marca do app
+            header: () => ({
+                margin: [40, 20, 40, 0],
+                table: {
+                    widths: ["auto", "*"],
+                    body: [
+                        [
+                            { text: "MF", fillColor: BRAND.headerBg, color: BRAND.headerText, bold: true, fontSize: 12, margin: [10, 8, 10, 8] },
+                            { text: "Meu Controle Financeiro", fillColor: BRAND.headerBg, color: BRAND.headerText, bold: true, fontSize: 12, margin: [10, 8, 10, 8] },
+                        ],
+                    ],
+                },
+                layout: "noBorders",
+            }),
+
+            // Data de geração + número de página em todas as páginas
+            footer: (currentPage, pageCount) => ({
+                margin: [40, 10, 40, 0],
+                columns: [
+                    { text: `Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, fontSize: 8, color: BRAND.inkSoft },
+                    { text: `Página ${currentPage} de ${pageCount}`, fontSize: 8, color: BRAND.inkSoft, alignment: "right" },
+                ],
+            }),
+
             content: [
                 { text: "Relatório de Transações", style: "header" },
                 { text: `Período: ${format(parseISO(startDate), "P", { locale: ptBR })} a ${format(parseISO(endDate), "P", { locale: ptBR })}`, style: "subheader" },
-                { text: `Cliente: ${user.nome || user.email}`, style: "subheader" },
-                { table: { headerRows: 1, widths: ["auto", "*", "*", "auto"], body: tableBody }, layout: { fillColor: (rowIndex) => rowIndex === 0 ? "#eeeeee" : rowIndex % 2 === 0 ? "#f9f9f9" : null, hLineWidth: () => 0.5, vLineWidth: () => 0.5, hLineColor: () => "#dddddd", vLineColor: () => "#dddddd" }, style: "tableStyle" },
+                { text: `Cliente: ${user.nome || user.email}`, style: "subheader", margin: [0, 0, 0, 15] },
+
+                // Resumo do período em 3 cartões coloridos
+                {
+                    columns: [
+                        {
+                            table: { widths: ["*"], body: [
+                                [{ text: "RECEITAS", fontSize: 8, color: BRAND.inkSoft, margin: [0, 0, 0, 2] }],
+                                [{ text: formatBRL(totalReceitas), fontSize: 14, bold: true, color: BRAND.receita }],
+                            ] },
+                            layout: "noBorders",
+                            fillColor: BRAND.receitaSoft,
+                            margin: [0, 0, 4, 0],
+                        },
+                        {
+                            table: { widths: ["*"], body: [
+                                [{ text: "DESPESAS", fontSize: 8, color: BRAND.inkSoft, margin: [0, 0, 0, 2] }],
+                                [{ text: formatBRL(totalDespesas), fontSize: 14, bold: true, color: BRAND.despesa }],
+                            ] },
+                            layout: "noBorders",
+                            fillColor: BRAND.despesaSoft,
+                            margin: [4, 0, 4, 0],
+                        },
+                        {
+                            table: { widths: ["*"], body: [
+                                [{ text: "SALDO", fontSize: 8, color: BRAND.inkSoft, margin: [0, 0, 0, 2] }],
+                                [{ text: formatBRL(saldo), fontSize: 14, bold: true, color: saldo >= 0 ? BRAND.receita : BRAND.despesa }],
+                            ] },
+                            layout: "noBorders",
+                            fillColor: BRAND.accentSoft,
+                            margin: [4, 0, 0, 0],
+                        },
+                    ],
+                    margin: [0, 0, 0, 20],
+                },
+
+                {
+                    table: { headerRows: 1, widths: ["auto", "*", "auto", "auto"], body: tableBody },
+                    layout: {
+                        fillColor: (rowIndex) => (rowIndex === 0 ? BRAND.headerBg : null),
+                        hLineWidth: () => 0.5,
+                        vLineWidth: () => 0,
+                        hLineColor: () => BRAND.rule,
+                    },
+                    style: "tableStyle",
+                },
             ],
-            styles: { header: { fontSize: 18, bold: true, margin: [0, 0, 0, 10] }, subheader: { fontSize: 12, margin: [0, 0, 0, 10] }, tableStyle: { margin: [0, 5, 0, 15] }, tableHeader: { bold: true, fontSize: 10, color: "black" }, receita: { color: "green" }, despesa: { color: "red" }, },
-            defaultStyle: { font: "Roboto" },
+
+            styles: {
+                header: { fontSize: 18, bold: true, color: BRAND.ink, margin: [0, 0, 0, 4] },
+                subheader: { fontSize: 10, color: BRAND.inkSoft },
+                tableStyle: { margin: [0, 5, 0, 15] },
+                tableHeader: { bold: true, fontSize: 9, color: BRAND.headerText },
+                receita: { color: BRAND.receita },
+                despesa: { color: BRAND.despesa },
+            },
+            defaultStyle: { font: "Roboto", fontSize: 9, color: BRAND.ink },
         };
 
         return new Promise((resolve, reject) => {

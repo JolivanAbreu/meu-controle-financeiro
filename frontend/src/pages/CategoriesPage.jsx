@@ -12,6 +12,16 @@ import {
 } from '../services/categoryService';
 import Modal from '../components/Modal'; // Importar o Modal
 
+const inputClasses =
+  "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
+  "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
+  "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
+  "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent " +
+  "disabled:bg-rule/40 dark:disabled:bg-rule-dark/40 disabled:text-ink-soft dark:disabled:text-ink-soft-dark " +
+  "transition-colors";
+
+const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
+
 function CategoriesPage() {
   // Estados existentes
   const [categories, setCategories] = useState([]);
@@ -22,13 +32,13 @@ function CategoriesPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- NOVOS ESTADOS PARA MODAIS ---
+  // --- ESTADOS PARA MODAIS ---
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState(null); // Guarda a subcat sendo editada
   const [deletingSubcategory, setDeletingSubcategory] = useState(null); // Guarda a subcat a ser deletada
 
-  // --- NOVOS ESTADOS PARA O FORMULÁRIO DE EDIÇÃO ---
+  // --- ESTADOS PARA O FORMULÁRIO DE EDIÇÃO ---
   const [editName, setEditName] = useState('');
   const [editCategoryId, setEditCategoryId] = useState('');
 
@@ -66,7 +76,7 @@ function CategoriesPage() {
       } finally { setFormLoading(false); }
   };
 
-  // --- NOVAS FUNÇÕES HANDLER PARA EDITAR ---
+  // --- FUNÇÕES HANDLER PARA EDITAR ---
   const handleEditClick = (subcategory) => {
     setEditingSubcategory(subcategory); // Guarda a subcategoria completa
     setEditName(subcategory.name);     // Preenche o estado do nome para o form
@@ -113,7 +123,7 @@ function CategoriesPage() {
     setEditCategoryId('');
   };
 
-  // --- NOVAS FUNÇÕES HANDLER PARA DELETAR ---
+  // --- FUNÇÕES HANDLER PARA DELETAR ---
   const handleDeleteClick = (subcategory) => {
     setDeletingSubcategory(subcategory); // Guarda a subcategoria a ser deletada
     setError(null); // Limpa erros
@@ -156,59 +166,107 @@ function CategoriesPage() {
     setIsDeleteModalOpen(false);
     setDeletingSubcategory(null);
   };
-  // --- FIM NOVAS FUNÇÕES ---
+  // --- FIM FUNÇÕES ---
 
 
-  if (loading) { return <div className="p-4 md:p-8">Carregando categorias...</div>; }
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto p-4 md:p-8 text-ink-soft dark:text-ink-soft-dark">
+        Carregando categorias...
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">Gerenciar Subcategorias</h1>
+    <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
+      <header>
+        <h1 className="font-display text-3xl font-medium text-ink dark:text-ink-dark">
+          Gerenciar Subcategorias
+        </h1>
+        <p className="text-sm text-ink-soft dark:text-ink-soft-dark mt-1">
+          Organize as subcategorias usadas nos seus lançamentos
+        </p>
+      </header>
 
-      {/* Formulário Criar (sem alterações) */}
-      <form onSubmit={handleSubmit} className="mb-8 p-6 bg-white border rounded-lg shadow-md">
-         {/* ... seu código do formulário de criação ... */}
-         <h2 className="text-xl font-semibold mb-4">Criar Nova Subcategoria</h2>
-        {error && !isEditModalOpen && !isDeleteModalOpen && <p className="text-red-500 mb-4 text-sm">{error}</p>}
+      {/* Formulário de criação */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-6"
+      >
+        <h2 className="font-display text-lg font-medium text-ink dark:text-ink-dark mb-4">
+          Criar Nova Subcategoria
+        </h2>
+        {error && !isEditModalOpen && !isDeleteModalOpen && (
+          <p className="text-despesa dark:text-despesa-dark mb-4 text-sm">{error}</p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoria Principal:</label>
-            <select id="category" value={selectedCatId} onChange={(e) => setSelectedCatId(e.target.value)} className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-              {categories.map(cat => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
+            <label htmlFor="category" className={labelClasses}>
+              Categoria Principal:
+            </label>
+            <select
+              id="category"
+              value={selectedCatId}
+              onChange={(e) => setSelectedCatId(e.target.value)}
+              className={inputClasses}
+            >
+              {categories.map(cat => (
+                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              ))}
             </select>
           </div>
           <div className="md:col-span-1">
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nome da Nova Subcategoria:</label>
-            <input type="text" id="name" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Restaurantes" className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"/>
+            <label htmlFor="name" className={labelClasses}>
+              Nome da Nova Subcategoria:
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Ex: Restaurantes"
+              className={inputClasses}
+            />
           </div>
           <div className="md:col-span-1 flex items-end">
-            <button type="submit" disabled={formLoading} className="w-full bg-blue-600 text-white px-5 py-2 rounded-md shadow-sm hover:bg-blue-700 disabled:bg-gray-400">
+            <button
+              type="submit"
+              disabled={formLoading}
+              className="w-full mt-1 bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-5 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
               {formLoading ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
         </div>
       </form>
 
-      {/* Lista de subcategorias (MODIFICADA com botões) */}
-      <div className="space-y-6">
+      {/* Lista de categorias e subcategorias */}
+      <div className="space-y-4">
         {categories.map(cat => {
           // Filtra subcategorias desta categoria ANTES do map
           const currentSubcategories = subcategories.filter(sub => sub.categoryId === cat.id);
 
           return (
-            <div key={cat.id} className="p-4 bg-white border rounded-lg shadow-sm">
-              <h3 className="text-xl font-semibold text-gray-700">{cat.name}</h3>
+            <div
+              key={cat.id}
+              className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-5"
+            >
+              <h3 className="font-display text-lg font-medium text-ink dark:text-ink-dark">
+                {cat.name}
+              </h3>
 
               {currentSubcategories.length > 0 ? (
-                <ul className="mt-2 space-y-2">
+                <ul className="mt-2 divide-y divide-rule dark:divide-rule-dark">
                   {currentSubcategories.map(sub => (
-                    <li key={sub.id} className="flex justify-between items-center text-gray-600 border-b pb-1 last:border-b-0">
+                    <li
+                      key={sub.id}
+                      className="flex justify-between items-center py-2.5 text-sm text-ink dark:text-ink-dark"
+                    >
                       <span>{sub.name}</span>
-                      {/* --- BOTÕES DE AÇÃO --- */}
-                      <div className="space-x-3">
+                      <div className="flex gap-1">
                         <button
                           onClick={() => handleEditClick(sub)}
-                          className="text-blue-500 hover:text-blue-700"
+                          className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-accent dark:hover:text-accent-dark hover:bg-accent-soft dark:hover:bg-accent-soft-dark rounded-full transition-colors"
                           aria-label={`Editar ${sub.name}`}
                           title="Editar"
                         >
@@ -216,42 +274,45 @@ function CategoriesPage() {
                         </button>
                         <button
                           onClick={() => handleDeleteClick(sub)}
-                          className="text-red-500 hover:text-red-700"
+                          className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-despesa dark:hover:text-despesa-dark hover:bg-despesa-soft dark:hover:bg-despesa-soft-dark rounded-full transition-colors"
                           aria-label={`Excluir ${sub.name}`}
                           title="Excluir"
                         >
                           <FaTrash />
                         </button>
                       </div>
-                      {/* --- FIM BOTÕES --- */}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-400 mt-2">Nenhuma subcategoria cadastrada.</p>
+                <p className="text-sm text-ink-soft dark:text-ink-soft-dark mt-2">
+                  Nenhuma subcategoria cadastrada.
+                </p>
               )}
             </div>
           );
         })}
       </div>
 
-      {/* --- MODAL DE EDIÇÃO --- */}
+      {/* Modal de edição */}
       <Modal
         isOpen={isEditModalOpen}
         onClose={closeEditModal}
         title="Editar Subcategoria"
       >
         <form onSubmit={handleUpdateSubmit} className="space-y-4">
-          {error && isEditModalOpen && <p className="text-red-500 text-sm">{error}</p>}
+          {error && isEditModalOpen && (
+            <p className="text-despesa dark:text-despesa-dark text-sm">{error}</p>
+          )}
           <div>
-            <label htmlFor="editCategory" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editCategory" className={labelClasses}>
               Categoria Principal:
             </label>
             <select
               id="editCategory"
               value={editCategoryId}
               onChange={(e) => setEditCategoryId(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
+              className={inputClasses}
             >
               {categories.map(cat => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
@@ -259,7 +320,7 @@ function CategoriesPage() {
             </select>
           </div>
           <div>
-            <label htmlFor="editName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="editName" className={labelClasses}>
               Nome da Subcategoria:
             </label>
             <input
@@ -268,21 +329,21 @@ function CategoriesPage() {
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               required
-              className="w-full p-2 border border-gray-300 rounded-md shadow-sm"
+              className={inputClasses}
             />
           </div>
           <div className="flex justify-end gap-3 pt-4">
-             <button
-                type="button"
-                onClick={closeEditModal}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-             >
-                Cancelar
-             </button>
+            <button
+              type="button"
+              onClick={closeEditModal}
+              className="px-4 py-2 text-sm font-medium border border-rule dark:border-rule-dark text-ink dark:text-ink-dark rounded-lg hover:bg-paper dark:hover:bg-paper-dark transition-colors"
+            >
+              Cancelar
+            </button>
             <button
               type="submit"
               disabled={formLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
+              className="px-4 py-2 text-sm font-medium bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {formLoading ? 'Salvando...' : 'Salvar Alterações'}
             </button>
@@ -290,40 +351,43 @@ function CategoriesPage() {
         </form>
       </Modal>
 
-      {/* --- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO --- */}
-       <Modal
-          isOpen={isDeleteModalOpen}
-          onClose={closeDeleteModal}
-          title="Confirmar Exclusão"
-        >
-            <div className='p-4'>
-                <p className="mb-6 text-gray-700">
-                    Tem certeza que deseja excluir a subcategoria
-                    <strong className="mx-1">{deletingSubcategory?.name}</strong>?
-                    <br/>
-                    <span className='text-sm text-red-600'>Atenção: Esta ação não pode ser desfeita. Verifique o comportamento esperado para transações vinculadas (excluir ou desvincular).</span>
-                </p>
-                {error && isDeleteModalOpen && <p className="text-red-500 text-sm mb-4">{error}</p>}
-                <div className="flex justify-end gap-4">
-                    <button
-                        onClick={closeDeleteModal}
-                        disabled={formLoading}
-                        className="px-4 py-2 font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        onClick={handleDeleteConfirm}
-                        disabled={formLoading}
-                        className="px-4 py-2 font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
-                    >
-                        {formLoading ? 'Excluindo...' : 'Excluir'}
-                    </button>
-                </div>
-            </div>
-        </Modal>
-
-    </div> // Fim do container principal
+      {/* Modal de confirmação de exclusão */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={closeDeleteModal}
+        title="Confirmar Exclusão"
+      >
+        <div>
+          <p className="mb-6 text-sm text-ink dark:text-ink-dark">
+            Tem certeza que deseja excluir a subcategoria
+            <strong className="mx-1">{deletingSubcategory?.name}</strong>?
+            <br />
+            <span className="text-xs text-despesa dark:text-despesa-dark">
+              Atenção: Esta ação não pode ser desfeita. Verifique o comportamento esperado para transações vinculadas (excluir ou desvincular).
+            </span>
+          </p>
+          {error && isDeleteModalOpen && (
+            <p className="text-despesa dark:text-despesa-dark text-sm mb-4">{error}</p>
+          )}
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={closeDeleteModal}
+              disabled={formLoading}
+              className="px-4 py-2 text-sm font-medium border border-rule dark:border-rule-dark text-ink dark:text-ink-dark rounded-lg hover:bg-paper dark:hover:bg-paper-dark transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={handleDeleteConfirm}
+              disabled={formLoading}
+              className="px-4 py-2 text-sm font-medium bg-despesa dark:bg-despesa-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+            >
+              {formLoading ? 'Excluindo...' : 'Excluir'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+    </div>
   );
 }
 
