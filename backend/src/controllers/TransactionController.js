@@ -361,6 +361,22 @@ class TransactionController {
       return res.status(500).json({ error: "Falha ao apagar transações futuras.", details: error.message });
     }
   }
+
+  async togglePago(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.userId;
+      const transaction = await Transaction.findOne({ where: { id, userId } });
+      if (!transaction) {
+        return res.status(404).json({ error: "Transação não encontrada." });
+      }
+      const updated = await transaction.update({ pago: !transaction.pago });
+      return res.json(updated);
+    } catch (error) {
+      console.error("ERRO AO ATUALIZAR STATUS DE PAGAMENTO:", error);
+      return res.status(500).json({ error: "Falha ao atualizar status de pagamento.", details: error.message });
+    }
+  }
 }
 
 module.exports = new TransactionController();

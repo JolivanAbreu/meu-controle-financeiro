@@ -22,14 +22,7 @@ export const BRAND_GRADIENTS = {
 // reais), construída só com camadas de gradiente CSS — sem imagem externa.
 function getTexture(cor) {
   const base = cor || "#2E4A5C";
-  return {
-    backgroundColor: base,
-    backgroundImage: [
-      "repeating-linear-gradient(45deg, rgba(255,255,255,0.10) 0px, rgba(255,255,255,0.10) 2px, transparent 2px, transparent 16px)",
-      "repeating-linear-gradient(-45deg, rgba(255,255,255,0.06) 0px, rgba(255,255,255,0.06) 2px, transparent 2px, transparent 22px)",
-      `linear-gradient(135deg, ${base} 0%, #12181F 100%)`,
-    ].join(", "),
-  };
+  return { background: `linear-gradient(135deg, ${base} 0%, #12181F 100%)` };
 }
 
 // Visual inspirado num cartão físico real (textura geométrica, chip, número

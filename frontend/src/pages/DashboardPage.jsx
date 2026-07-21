@@ -208,6 +208,25 @@ function DashboardPage() {
     );
   }, [goals]);
 
+  const handleTogglePago = async (transaction) => {
+    setRangeTransactions((current) =>
+      current.map((t) =>
+        t.id === transaction.id ? { ...t, pago: !t.pago } : t,
+      ),
+    );
+    try {
+      await api.patch(`/transactions/${transaction.id}/pago`);
+    } catch (error) {
+      console.error("Falha ao atualizar status de pagamento:", error);
+      toast.error("Não foi possível atualizar o status de pagamento.");
+      setRangeTransactions((current) =>
+        current.map((t) =>
+          t.id === transaction.id ? { ...t, pago: transaction.pago } : t,
+        ),
+      );
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingTransaction(null);
@@ -460,6 +479,7 @@ function DashboardPage() {
                 <th className="px-5 py-3 font-medium">Data</th>
                 <th className="px-5 py-3 font-medium">Categoria</th>
                 <th className="px-5 py-3 font-medium">Tipo</th>
+                <th className="px-5 py-3 font-medium text-center">Pago</th>
                 <th className="px-5 py-3 font-medium text-right">Valor</th>
                 <th className="px-5 py-3 font-medium text-center">Ações</th>
               </tr>
@@ -468,7 +488,7 @@ function DashboardPage() {
               {loading ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="p-10 text-center text-ink-soft dark:text-ink-soft-dark"
                   >
                     Carregando...
@@ -477,7 +497,7 @@ function DashboardPage() {
               ) : transactions.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="p-10 text-center text-ink-soft dark:text-ink-soft-dark"
                   >
                     Nenhuma transação encontrada.
@@ -493,7 +513,13 @@ function DashboardPage() {
                       {formatDate(t.data)}
                     </td>
                     <td className="px-5 py-3.5">
-                      <div className="font-medium text-ink dark:text-ink-dark text-sm">
+                      <div
+                        className={`font-medium text-sm ${
+                          t.pago
+                            ? "text-ink-soft dark:text-ink-soft-dark line-through"
+                            : "text-ink dark:text-ink-dark"
+                        }`}
+                      >
                         {t.subcategory?.category?.name || "Geral"}
                       </div>
                       <div className="text-xs text-ink-soft dark:text-ink-soft-dark">
@@ -510,6 +536,17 @@ function DashboardPage() {
                       >
                         {t.tipo === "receita" ? "Receita" : "Despesa"}
                       </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-center">
+                      {t.tipo === "despesa" && (
+                        <input
+                          type="checkbox"
+                          checked={!!t.pago}
+                          onChange={() => handleTogglePago(t)}
+                          aria-label="Marcar como pago"
+                          className="h-4 w-4 accent-receita dark:accent-receita-dark rounded cursor-pointer"
+                        />
+                      )}
                     </td>
                     <td
                       className={`px-5 py-3.5 text-right font-mono text-sm font-medium ${

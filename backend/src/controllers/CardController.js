@@ -147,7 +147,7 @@ class CardController {
   async index(req, res) {
     try {
       const userId = req.userId;
-      const { includeInactive } = req.query;
+      const { includeInactive, mes, ano } = req.query;
 
       const whereCondition = { userId };
       if (includeInactive !== 'true') {
@@ -160,6 +160,8 @@ class CardController {
       });
 
       const cardsById = new Map(cards.map((c) => [c.id, c]));
+      const mesRef = mes ? parseInt(mes, 10) : null;
+      const anoRef = ano ? parseInt(ano, 10) : null;
 
       const cardsComStats = await Promise.all(
         cards.map(async (card) => {
@@ -172,9 +174,16 @@ class CardController {
           let limiteUtilizado = 0;
           let proximaFatura = 0;
           let totalGasto = 0;
+          let faturaAberta = true;
 
           if (diaFechamento) {
-            const { cycleStart, cycleEnd } = getCurrentCycle(diaFechamento);
+            // Com mes/ano informados: fatura daquele mês específico.
+            // Sem eles: ciclo em aberto hoje (comportamento padrão).
+            const { cycleStart, cycleEnd } = mesRef && anoRef
+              ? getCycleForClosingMonth(diaFechamento, anoRef, mesRef - 1)
+              : getCurrentCycle(diaFechamento);
+
+            faturaAberta = new Date() <= cycleEnd;
 
             // IDs considerados para o total "compartilhado" do ciclo: o próprio
             // cartão base (físico) + todos os seus virtuais, quando `card` for físico.
@@ -224,6 +233,7 @@ class CardController {
             limiteDisponivel: limiteTotal - limiteUtilizado,
             proximaFatura,
             totalGasto,
+            faturaAberta,
           };
 
           if (isFisico) {
@@ -391,6 +401,64 @@ class CardController {
     } catch (error) {
       console.error('ERRO AO BUSCAR HISTÓRICO DO CARTÃO:', error);
       return res.status(500).json({ error: 'Falha ao buscar histórico.', details: error.message });
+    }
+  }
+
+  // Lista as transações da fatura de um mês/ano específico (ou do ciclo em
+  // aberto, se mes/ano não forem informados) — usada para marcar itens como pagos.
+  async transacoes(req, res) {
+    try {
+      const { id } = req.params;
+      const userId = req.userId;
+      const { mes, ano } = req.query;
+
+      const card = await Card.findOne({ where: { id, userId } });
+      if (!card) {
+        return res.status(404).json({ error: 'Cartão não encontrado.' });
+      }
+
+      const isFisico = card.tipo === 'fisico';
+      const cartaoBase = isFisico
+        ? card
+        : await Card.findOne({ where: { id: card.cartaoPaiId, userId } });
+
+      if (!cartaoBase || !cartaoBase.diaFechamento) {
+        return res.status(400).json({ error: 'Cartão sem dia de fechamento definido.' });
+      }
+
+      const mesRef = mes ? parseInt(mes, 10) : null;
+      const anoRef = ano ? parseInt(ano, 10) : null;
+      const { cycleStart, cycleEnd } = mesRef && anoRef
+        ? getCycleForClosingMonth(cartaoBase.diaFechamento, anoRef, mesRef - 1)
+        : getCurrentCycle(cartaoBase.diaFechamento);
+
+      const idsDoGrupo = isFisico
+        ? [
+            card.id,
+            ...(await Card.findAll({ where: { cartaoPaiId: card.id, userId }, attributes: ['id'] })).map((c) => c.id),
+          ]
+        : [card.id];
+
+      const transactions = await Transaction.findAll({
+        where: {
+          userId,
+          tipo: 'despesa',
+          cardId: { [Op.in]: idsDoGrupo },
+          data: {
+            [Op.between]: [
+              cycleStart.toISOString().split('T')[0],
+              cycleEnd.toISOString().split('T')[0],
+            ],
+          },
+        },
+        include: [{ model: Card, as: 'card', attributes: ['id', 'nome'] }],
+        order: [['data', 'DESC']],
+      });
+
+      return res.json(transactions);
+    } catch (error) {
+      console.error('ERRO AO LISTAR TRANSAÇÕES DA FATURA:', error);
+      return res.status(500).json({ error: 'Falha ao listar transações da fatura.', details: error.message });
     }
   }
 }

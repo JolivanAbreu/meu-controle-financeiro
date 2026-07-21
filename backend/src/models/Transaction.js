@@ -13,6 +13,10 @@ class Transaction extends Model {
         recurrence: DataTypes.STRING,
         recurrence_group_id: DataTypes.STRING,
         recurrence_end_date: DataTypes.DATE,
+        pago: {
+          type: DataTypes.BOOLEAN,
+          defaultValue: false,
+        },
 
         subcategoryId: {
           type: DataTypes.INTEGER,

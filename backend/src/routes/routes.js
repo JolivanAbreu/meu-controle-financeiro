@@ -31,6 +31,7 @@ routes.post('/transactions', TransactionController.store);
 routes.put('/transactions/:id', TransactionController.update);
 routes.delete('/transactions/:id', TransactionController.destroy);
 routes.delete('/transactions/group/:groupId', TransactionController.destroyGroup);
+routes.patch('/transactions/:id/pago', TransactionController.togglePago);
 routes.post('/budgets', BudgetController.store);
 routes.get('/budgets', BudgetController.index);
 routes.put('/budgets/:id', BudgetController.update);
@@ -57,6 +58,7 @@ routes.post('/reports/custom', ReportController.generate);
 routes.post('/cards', CardController.store);
 routes.get('/cards', CardController.index);
 routes.get('/cards/:id/historico', CardController.history);
+routes.get('/cards/:id/transacoes', CardController.transacoes);
 routes.put('/cards/:id', CardController.update);
 routes.delete('/cards/:id', CardController.destroy);
 

@@ -2,8 +2,12 @@
 
 import api from './api';
 
-export const getCards = () => {
-  return api.get('/cards');
+export const getCards = (params = {}) => {
+  return api.get('/cards', { params });
+};
+
+export const getCardTransactions = (id, params = {}) => {
+  return api.get(`/cards/${id}/transacoes`, { params });
 };
 
 export const createCard = (data) => {
