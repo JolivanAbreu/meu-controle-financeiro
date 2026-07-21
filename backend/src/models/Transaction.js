@@ -18,6 +18,12 @@ class Transaction extends Model {
           type: DataTypes.INTEGER,
           field: 'subcategory_id',
         },
+        // Cartão utilizado no pagamento (independente da categoria/subcategoria).
+        // Opcional: nem toda transação precisa estar ligada a um cartão.
+        cardId: {
+          type: DataTypes.INTEGER,
+          field: 'card_id',
+        },
         userId: {
           type: DataTypes.INTEGER,
           field: 'user_id',
@@ -35,6 +41,10 @@ class Transaction extends Model {
     this.belongsTo(models.Subcategory, {
       foreignKey: 'subcategoryId',
       as: 'subcategory',
+    });
+    this.belongsTo(models.Card, {
+      foreignKey: 'cardId',
+      as: 'card',
     });
   }
 }

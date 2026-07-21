@@ -13,6 +13,7 @@ const GoalController = require('../controllers/GoalController');
 const CategoryController = require("../controllers/CategoryController");
 const SubcategoryController = require("../controllers/SubcategoryController");
 const ReportController = require('../controllers/ReportController');
+const CardController = require('../controllers/CardController');
 
 const routes = new Router();
 
@@ -43,15 +44,20 @@ routes.post('/goals/:id/contribute', GoalController.addContribution);
 // --- ROTAS DE CATEGORIAS ---
 routes.get('/categories', CategoryController.index);
 
-// --- ROTAS DE SUBCATEGORIAS (ATUALIZADO) ---
+// --- ROTAS DE SUBCATEGORIAS ---
 routes.get('/subcategories', SubcategoryController.index);
 routes.post('/subcategories', SubcategoryController.store);
-// --- NOVAS ROTAS ---
 routes.put('/subcategories/:id', SubcategoryController.update);
 routes.delete('/subcategories/:id', SubcategoryController.destroy);
-// --- FIM NOVAS ROTAS ---
 
 // --- ROTA DE RELATÓRIOS ---
 routes.post('/reports/custom', ReportController.generate);
+
+// --- ROTAS DE CARTÕES ---
+routes.post('/cards', CardController.store);
+routes.get('/cards', CardController.index);
+routes.get('/cards/:id/historico', CardController.history);
+routes.put('/cards/:id', CardController.update);
+routes.delete('/cards/:id', CardController.destroy);
 
 module.exports = routes;

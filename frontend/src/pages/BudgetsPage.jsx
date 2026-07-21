@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import api from "../services/api";
 import Modal from "../components/Modal";
+import ConfirmModal from "../components/ConfirmModal";
 import BudgetForm from "../components/BudgetForm";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
@@ -81,19 +82,26 @@ function BudgetsPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = async (budgetId) => {
-    if (window.confirm("Tem certeza que deseja apagar este orçamento?")) {
-      const promise = api.delete(`/budgets/${budgetId}`);
-      try {
-        await toast.promise(promise, {
-          loading: "Apagando...",
-          success: "Orçamento apagado com sucesso!",
-          error: "Não foi possível apagar o orçamento.",
-        });
-        setBudgets((current) => current.filter((b) => b.id !== budgetId));
-      } catch (error) {
-        console.error("Erro ao apagar orçamento:", error);
-      }
+  const [pendingDelete, setPendingDelete] = useState(null);
+
+  const handleDelete = (budget) => {
+    setPendingDelete(budget);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const promise = api.delete(`/budgets/${pendingDelete.id}`);
+    try {
+      await toast.promise(promise, {
+        loading: "Apagando...",
+        success: "Orçamento apagado com sucesso!",
+        error: "Não foi possível apagar o orçamento.",
+      });
+      setBudgets((current) => current.filter((b) => b.id !== pendingDelete.id));
+    } catch (error) {
+      console.error("Erro ao apagar orçamento:", error);
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -231,6 +239,15 @@ function BudgetsPage() {
         />
       </Modal>
 
+      <ConfirmModal
+        isOpen={!!pendingDelete}
+        title="Excluir orçamento"
+        message={`Tem certeza que deseja apagar o orçamento de "${pendingDelete?.categoria}"?`}
+        confirmLabel="Apagar"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
+
       {budgets.length === 0 ? (
         <p className="text-ink-soft dark:text-ink-soft-dark text-center py-10">
           Nenhum orçamento encontrado para este período.{" "}
@@ -271,7 +288,7 @@ function BudgetsPage() {
                       <FaEdit size={14} />
                     </button>
                     <button
-                      onClick={() => handleDelete(budget.id)}
+                      onClick={() => handleDelete(budget)}
                       aria-label="Excluir orçamento"
                       className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-despesa dark:hover:text-despesa-dark hover:bg-despesa-soft dark:hover:bg-despesa-soft-dark rounded-full transition-colors"
                     >

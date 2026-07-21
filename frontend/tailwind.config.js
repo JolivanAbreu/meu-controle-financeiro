@@ -46,6 +46,20 @@ module.exports = {
         card: "0 1px 2px rgba(23,36,31,0.06), 0 8px 24px rgba(23,36,31,0.05)",
         "card-dark": "0 1px 2px rgba(0,0,0,0.2), 0 8px 24px rgba(0,0,0,0.25)",
       },
+      keyframes: {
+        "overlay-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "modal-in": {
+          "0%": { opacity: "0", transform: "scale(0.95) translateY(8px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+      },
+      animation: {
+        "overlay-in": "overlay-in 0.18s ease-out",
+        "modal-in": "modal-in 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)",
+      },
     },
   },
   plugins: [],

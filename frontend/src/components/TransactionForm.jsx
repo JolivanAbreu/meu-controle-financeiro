@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 import toast from "react-hot-toast";
 import { getCategories, getSubcategories } from "../services/categoryService";
+import { getCards } from "../services/cardService";
 import { FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 const inputClasses =
@@ -46,16 +47,20 @@ function TransactionForm({ onSuccess, initialData }) {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [dataLoading, setDataLoading] = useState(true);
+  const [cards, setCards] = useState([]);
+  const [selectedCard, setSelectedCard] = useState("");
 
   useEffect(() => {
     async function loadCategoryData() {
       try {
-        const [catRes, subcatRes] = await Promise.all([
+        const [catRes, subcatRes, cardRes] = await Promise.all([
           getCategories(),
           getSubcategories(),
+          getCards(),
         ]);
         setAllCategories(catRes.data);
         setAllSubcategories(subcatRes.data);
+        setCards(cardRes.data.filter((c) => c.ativo));
       } catch (error) {
         console.error("Falha ao carregar dados de categoria", error);
         toast.error("Não foi possível carregar as categorias.");
@@ -68,13 +73,14 @@ function TransactionForm({ onSuccess, initialData }) {
 
   useEffect(() => {
     if (!dataLoading && initialData) {
-      const { tipo, valor, data, descricao, recurrence, subcategory } = initialData;
+      const { tipo, valor, data, descricao, recurrence, subcategory, cardId } = initialData;
 
       setTipo(tipo);
       setValor(valor);
       setData(new Date(data).toISOString().split("T")[0]);
       setDescricao(descricao || "");
       setRecurrence(recurrence || "variável");
+      setSelectedCard(cardId || "");
 
       if (subcategory) {
         const parentCategoryId = subcategory.category_id;
@@ -98,6 +104,7 @@ function TransactionForm({ onSuccess, initialData }) {
       setSelectedCategory("");
       setSelectedSubcategory("");
       setFilteredSubcategories([]);
+      setSelectedCard("");
     }
   }, [initialData, dataLoading, allSubcategories]);
 
@@ -130,6 +137,7 @@ function TransactionForm({ onSuccess, initialData }) {
       data,
       descricao,
       subcategoryId: parseInt(selectedSubcategory),
+      cardId: selectedCard ? parseInt(selectedCard) : null,
     };
 
     if (!initialData) {
@@ -252,6 +260,25 @@ function TransactionForm({ onSuccess, initialData }) {
           )}
         </div>
       </div>
+
+      {/* Cartão (Opcional) */}
+      {cards.length > 0 && (
+        <div>
+          <label className={labelClasses}>Cartão (Opcional)</label>
+          <select
+            value={selectedCard}
+            onChange={(e) => setSelectedCard(e.target.value)}
+            className={inputClasses}
+          >
+            <option value="">Nenhum / Não foi no cartão</option>
+            {cards.map((card) => (
+              <option key={card.id} value={card.id}>
+                {card.nome}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Descrição (Opcional) */}
       <div>

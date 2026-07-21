@@ -8,8 +8,8 @@ function Modal({ isOpen, onClose, title, children }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-ink/50 dark:bg-black/60 z-40 flex items-center justify-center p-4">
-      <div className="relative bg-paper-raised dark:bg-paper-raised-dark rounded-xl shadow-card dark:shadow-card-dark border border-rule dark:border-rule-dark z-10 w-full max-w-md">
+    <div className="fixed inset-0 bg-ink/50 dark:bg-black/60 z-[100] flex items-center justify-center p-4 animate-overlay-in">
+      <div className="relative bg-paper-raised dark:bg-paper-raised-dark rounded-xl shadow-card dark:shadow-card-dark border border-rule dark:border-rule-dark z-10 w-full max-w-md animate-modal-in">
         <div className="flex justify-between items-center px-6 py-4 border-b border-rule dark:border-rule-dark">
           <h3 className="font-display text-lg font-medium text-ink dark:text-ink-dark">
             {title}

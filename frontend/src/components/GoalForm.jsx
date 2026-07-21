@@ -1,98 +1,111 @@
-// frontend/src/components/GoalForm.jsx
-
 import { useState, useEffect } from "react";
-// Importe os services corretos
-import { createGoal, updateGoal } from "../services/goalService"; // Exemplo
+import { createGoal, updateGoal } from "../services/goalService";
 import toast from "react-hot-toast";
+
+const inputClasses =
+  "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
+  "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
+  "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
+  "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors";
+
+const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
 
 function GoalForm({ onSuccess, initialData }) {
   const [titulo, setTitulo] = useState("");
   const [valorObjetivo, setValorObjetivo] = useState("");
-  // const [valorAtual, setValorAtual] = useState(""); // --- REMOVIDO ---
   const [prazo, setPrazo] = useState("");
-  // Adicionar estado para accountId (Upgrade 2)
-  // const [accountId, setAccountId] = useState('');
-  // const [accounts, setAccounts] = useState([]);
 
   useEffect(() => {
     if (initialData) {
       setTitulo(initialData.titulo);
       setValorObjetivo(initialData.valor_objetivo);
-      // setValorAtual(initialData.valor_atual); // --- REMOVIDO ---
-      setPrazo(initialData.prazo ? new Date(initialData.prazo).toISOString().split("T")[0] : "");
-      // setAccountId(initialData.accountId || ''); // Upgrade 2
+      setPrazo(
+        initialData.prazo
+          ? new Date(initialData.prazo).toISOString().split("T")[0]
+          : "",
+      );
     } else {
-        // Reset para criação
-        setTitulo('');
-        setValorObjetivo('');
-        setPrazo('');
-        // setAccountId(''); // Upgrade 2
+      setTitulo("");
+      setValorObjetivo("");
+      setPrazo("");
     }
-    // Adicionar fetch de contas aqui para Upgrade 2
   }, [initialData]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    // Monta o payload SEM valor_atual
     const goalData = {
       titulo,
       valor_objetivo: valorObjetivo,
-      // valor_atual não é mais enviado daqui
       prazo: prazo || null,
-      // accountId: accountId || null, // Upgrade 2
     };
 
     const promise = initialData
-      ? updateGoal(initialData.id, goalData) // Usa service atualizado
-      : createGoal(goalData);                 // Usa service atualizado
+      ? updateGoal(initialData.id, goalData)
+      : createGoal(goalData);
 
     try {
-      // toast.promise já executa a promise
       const response = await toast.promise(promise, {
         loading: "Salvando...",
         success: "Meta salva com sucesso!",
         error: (err) => err.response?.data?.error || "Falha ao salvar a meta.",
       });
-      onSuccess(response.data); // Chama onSuccess com os dados retornados
+      onSuccess(response.data);
     } catch (error) {
-      // O erro já foi mostrado pelo toast, apenas logar se necessário
-      console.error("Erro ao salvar meta (pego no catch):", error);
+      console.error("Erro ao salvar meta:", error);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-700">Título da Meta</label>
-        <input type="text" required value={titulo} onChange={(e) => setTitulo(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"/>
+        <label className={labelClasses}>Título da Meta</label>
+        <input
+          type="text"
+          required
+          value={titulo}
+          onChange={(e) => setTitulo(e.target.value)}
+          placeholder="Ex: Viagem para o Chile"
+          className={inputClasses}
+        />
       </div>
-      <div> {/* Removido flex gap-4 */}
-          <label className="block text-sm font-medium text-gray-700">Valor Objetivo (R$)</label>
-          <input type="number" step="0.01" required value={valorObjetivo} onChange={(e) => setValorObjetivo(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"/>
-      </div>
-      {/* --- CAMPO VALOR ATUAL REMOVIDO --- */}
+
       <div>
-        <label className="block text-sm font-medium text-gray-700">Prazo (Opcional)</label>
-        <input type="date" value={prazo} onChange={(e) => setPrazo(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"/>
-      </div>
-
-       {/* --- CAMPO CONTA (Upgrade 2) --- */}
-       {/*
-        <div>
-            <label className="block text-sm font-medium text-gray-700">Vincular à Conta (Opcional)</label>
-            <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md">
-                <option value="">Nenhuma</option>
-                {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-            </select>
+        <label className={labelClasses}>Valor Objetivo</label>
+        <div className="relative mt-1">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft dark:text-ink-soft-dark font-mono text-sm pointer-events-none">
+            R$
+          </span>
+          <input
+            type="number"
+            step="0.01"
+            required
+            value={valorObjetivo}
+            onChange={(e) => setValorObjetivo(e.target.value)}
+            placeholder="0,00"
+            className={`${inputClasses} mt-0 pl-9 font-mono`}
+          />
         </div>
-       */}
-       {/* ----------------------------- */}
-
-      <div className="flex justify-end pt-2"> {/* Adicionado pt-2 */}
-        <button type="submit" className="px-4 py-2 font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
-          {initialData ? 'Atualizar Meta' : 'Criar Meta'}
-        </button>
       </div>
+
+      <div>
+        <label className={labelClasses}>Prazo (Opcional)</label>
+        <input
+          type="date"
+          value={prazo}
+          onChange={(e) => setPrazo(e.target.value)}
+          className={`${inputClasses} font-mono`}
+        />
+        <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1">
+          Deixe em branco se não houver um prazo definido.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+      >
+        {initialData ? "Atualizar Meta" : "Criar Meta"}
+      </button>
     </form>
   );
 }

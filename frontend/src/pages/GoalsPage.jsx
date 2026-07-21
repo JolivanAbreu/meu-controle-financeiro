@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import Modal from "../components/Modal";
+import ConfirmModal from "../components/ConfirmModal";
 import GoalForm from "../components/GoalForm";
 import ContributeModal from "../components/ContributeModal";
 import { FaEdit, FaTrash, FaPlusCircle } from "react-icons/fa";
@@ -129,24 +130,27 @@ function GoalsPage() {
     setIsContributeModalOpen(true);
   };
 
-  const handleDelete = async (goalId) => {
-    if (
-      window.confirm(
-        "Tem certeza que deseja apagar esta meta? (Contribuições também serão apagadas)",
-      )
-    ) {
-      const promise = deleteGoal(goalId);
-      try {
-        await toast.promise(promise, {
-          loading: "Apagando...",
-          success: "Meta apagada com sucesso!",
-          error: (err) =>
-            err.response?.data?.error || "Não foi possível apagar a meta.",
-        });
-        setGoals((current) => current.filter((g) => g.id !== goalId));
-      } catch (error) {
-        console.error("Erro ao apagar meta:", error);
-      }
+  const [pendingDelete, setPendingDelete] = useState(null);
+
+  const handleDelete = (goal) => {
+    setPendingDelete(goal);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const promise = deleteGoal(pendingDelete.id);
+    try {
+      await toast.promise(promise, {
+        loading: "Apagando...",
+        success: "Meta apagada com sucesso!",
+        error: (err) =>
+          err.response?.data?.error || "Não foi possível apagar a meta.",
+      });
+      setGoals((current) => current.filter((g) => g.id !== pendingDelete.id));
+    } catch (error) {
+      console.error("Erro ao apagar meta:", error);
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -290,6 +294,15 @@ function GoalsPage() {
         onSuccess={handleContributionSuccess}
       />
 
+      <ConfirmModal
+        isOpen={!!pendingDelete}
+        title="Excluir meta"
+        message={`Tem certeza que deseja apagar a meta "${pendingDelete?.titulo}"? As contribuições já registradas também serão apagadas.`}
+        confirmLabel="Apagar"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
+
       {goals.length === 0 ? (
         <p className="text-ink-soft dark:text-ink-soft-dark text-center py-10">
           Nenhuma meta encontrada. Crie sua primeira meta!
@@ -336,7 +349,7 @@ function GoalsPage() {
                         <FaEdit size={14} />
                       </button>
                       <button
-                        onClick={() => handleDelete(goal.id)}
+                        onClick={() => handleDelete(goal)}
                         className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-despesa dark:hover:text-despesa-dark hover:bg-despesa-soft dark:hover:bg-despesa-soft-dark rounded-full transition-colors"
                         title="Excluir Meta"
                       >

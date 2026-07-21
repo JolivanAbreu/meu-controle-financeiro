@@ -12,6 +12,7 @@ const {
 const Transaction = require('../models/Transaction');
 const Subcategory = require('../models/Subcategory');
 const Category = require('../models/Category');
+const Card = require('../models/Card');
 const Yup = require('yup');
 
 class TransactionController {
@@ -156,6 +157,11 @@ class TransactionController {
               },
             ],
           },
+          {
+            model: Card,
+            as: 'card',
+            attributes: ['id', 'nome', 'tipo', 'cor'],
+          },
         ],
       });
 
@@ -187,6 +193,7 @@ class TransactionController {
           otherwise: (schema) => schema.nullable(),
         }),
         subcategoryId: Yup.number().integer().required(),
+        cardId: Yup.number().integer().nullable(),
       });
 
       // Log antes da validação
@@ -194,7 +201,7 @@ class TransactionController {
       await schema.validate(req.body, { abortEarly: false });
       console.log("Validação Yup passou.");
 
-      const { tipo, valor, data, descricao, recurrence, installments, subcategoryId } = req.body;
+      const { tipo, valor, data, descricao, recurrence, installments, subcategoryId, cardId } = req.body;
       const userId = req.userId;
 
       // 1. Validação e Verificação de Segurança da Subcategoria
@@ -209,6 +216,14 @@ class TransactionController {
         return res.status(403).json({ error: 'Subcategoria não encontrada ou não pertence a este usuário.' });
       }
 
+      // 1b. Validação de Segurança do Cartão (opcional)
+      if (cardId) {
+        const card = await Card.findOne({ where: { id: cardId, userId } });
+        if (!card) {
+          return res.status(403).json({ error: 'Cartão não encontrado ou não pertence a este usuário.' });
+        }
+      }
+
       // Lógica de Criação
       if (recurrence === 'variável') {
         console.log("Iniciando Transaction.create para transação variável...");
@@ -219,6 +234,7 @@ class TransactionController {
           data,
           descricao,
           subcategoryId,
+          cardId: cardId || null,
           recurrence: 'variável',
         };
         console.log("Dados para create:", transactionData);
@@ -242,6 +258,7 @@ class TransactionController {
             data: addMonths(startDate, i),
             descricao,
             subcategoryId,
+            cardId: cardId || null,
             recurrence: 'fixo',
             recurrence_group_id: recurrenceGroupId,
             recurrence_end_date: endDate,
@@ -280,7 +297,7 @@ class TransactionController {
     try {
       const { id } = req.params;
       const { applyToFuture } = req.query;
-      const { tipo, valor, data, descricao, subcategoryId } = req.body;
+      const { tipo, valor, data, descricao, subcategoryId, cardId } = req.body;
       const userId = req.userId;
 
       // Validação rápida (idealmente usar Yup)
@@ -291,10 +308,15 @@ class TransactionController {
       const subcategory = await Subcategory.findOne({ where: { id: subcategoryId, userId: userId } });
       if (!subcategory) { return res.status(403).json({ error: 'Subcategoria inválida.' }); }
 
+      if (cardId) {
+        const card = await Card.findOne({ where: { id: cardId, userId } });
+        if (!card) { return res.status(403).json({ error: 'Cartão inválido.' }); }
+      }
+
       const transaction = await Transaction.findOne({ where: { id, userId: userId } });
       if (!transaction) { return res.status(404).json({ error: "Transação não encontrada." }); }
 
-      const updateData = { tipo, valor, data, descricao, subcategoryId };
+      const updateData = { tipo, valor, data, descricao, subcategoryId, cardId: cardId || null };
 
       if (!applyToFuture || applyToFuture === 'false') {
         const updatedTransaction = await transaction.update(updateData);
@@ -303,7 +325,7 @@ class TransactionController {
         if (!transaction.recurrence_group_id) { return res.status(400).json({ error: "Não é recorrente." }); }
         const originalDate = transaction.data;
         const updatedCurrentTransaction = await transaction.update(updateData);
-        const futureUpdateData = { tipo, valor, descricao, subcategoryId };
+        const futureUpdateData = { tipo, valor, descricao, subcategoryId, cardId: cardId || null };
         await Transaction.update(futureUpdateData, { where: { userId: userId, recurrence_group_id: transaction.recurrence_group_id, data: { [Op.gt]: originalDate } } });
         return res.json(updatedCurrentTransaction);
       }

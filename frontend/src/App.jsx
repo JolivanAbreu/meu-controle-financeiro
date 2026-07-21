@@ -11,7 +11,8 @@ import DashboardPage from "./pages/DashboardPage";
 import BudgetsPage from "./pages/BudgetsPage";
 import GoalsPage from "./pages/GoalsPage";
 import ReportsPage from "./pages/ReportsPage";
-import CategoriesPage from './pages/CategoriesPage';
+import CategoriesPage from "./pages/CategoriesPage";
+import CardsPage from "./pages/CardsPage";
 
 function App() {
   return (
@@ -29,11 +30,9 @@ function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/budgets" element={<BudgetsPage />} />
             <Route path="/goals" element={<GoalsPage />} />
+            <Route path="/cards" element={<CardsPage />} />
             <Route path="/reports" element={<ReportsPage />} />
-            
-            {}
             <Route path="/categorias" element={<CategoriesPage />} />
-            
           </Route>
         </Route>
       </Routes>

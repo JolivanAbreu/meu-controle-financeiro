@@ -11,6 +11,7 @@ const Goal = require('../models/Goal');
 const GoalContribution = require('../models/GoalContribution');
 const Category = require('../models/Category');
 const Subcategory = require('../models/Subcategory');
+const Card = require('../models/Card');
 
 // Determina o ambiente e carrega a configuração correta
 const env = process.env.NODE_ENV || 'development';
@@ -22,7 +23,8 @@ const models = [
     Goal,
     Category,
     Subcategory,
-    GoalContribution // Certifique-se que GoalContribution está aqui
+    GoalContribution,
+    Card,
 ];
 
 class Database {
@@ -34,37 +36,29 @@ class Database {
     }
     this.connection = new Sequelize(dbConfig);
     this.init();
-    // Removido this.associate() daqui, pois agora é chamado dentro de init()
   }
 
-  // --- MÉTODO INIT CORRIGIDO ---
   init() {
     // 1. Inicializa todos os models
     models.forEach((model) => {
-        // Verifica se é um model válido antes de chamar init
         if (model && typeof model.init === 'function') {
             model.init(this.connection);
             console.log(`Model ${model.name || 'Unknown'} initialized.`);
         } else {
             console.error(`ERRO: Item inválido encontrado no array 'models' durante a inicialização.`);
-            // Você pode querer lançar um erro aqui para parar a aplicação
-            // throw new Error(`Invalid model found in models array.`);
         }
     });
 
     // 2. Chama o método associate DEPOIS que TODOS os models foram inicializados
     models.forEach((model) => {
-         // Verifica se o model é válido e se possui o método associate
          if (model && typeof model.associate === 'function') {
             model.associate(this.connection.models);
             console.log(`Associations called for model ${model.name || 'Unknown'}.`);
          }
-         // Models que não possuem 'associate' são ignorados silenciosamente, o que é normal.
     });
 
     console.log("Database models initialized and associated successfully.");
   }
-  // -----------------------------
 }
 
 module.exports = new Database();

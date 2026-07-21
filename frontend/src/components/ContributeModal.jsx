@@ -1,124 +1,111 @@
-// frontend/src/components/ContributeModal.jsx
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast';
-import Modal from './Modal';
-import { addGoalContribution } from '../services/goalService'; 
-// Importar getAccounts para Upgrade 2
-// import { getAccounts } from '../services/accountService';
+import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import Modal from "./Modal";
+import { addGoalContribution } from "../services/goalService";
+
+const inputClasses =
+  "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
+  "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
+  "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
+  "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors";
+
+const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
 
 function ContributeModal({ isOpen, onClose, goal, onSuccess }) {
-    const [valor, setValor] = useState('');
-    const [data, setData] = useState(new Date().toISOString().split('T')[0]);
-    const [loading, setLoading] = useState(false);
-    // Estados para Upgrade 2
-    // const [contaOrigemId, setContaOrigemId] = useState('');
-    // const [accounts, setAccounts] = useState([]);
+  const [valor, setValor] = useState("");
+  const [data, setData] = useState(new Date().toISOString().split("T")[0]);
+  const [loading, setLoading] = useState(false);
 
-    // Resetar form quando modal abre ou fecha, ou goal muda
-    useEffect(() => {
-        if (isOpen) {
-            setValor('');
-            setData(new Date().toISOString().split('T')[0]);
-            // setContaOrigemId(''); // Upgrade 2
-            // Fetch accounts para Upgrade 2
-        }
-    }, [isOpen, goal]);
+  useEffect(() => {
+    if (isOpen) {
+      setValor("");
+      setData(new Date().toISOString().split("T")[0]);
+    }
+  }, [isOpen, goal]);
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!goal || !valor || !data) return;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!goal || !valor || !data) return;
+    setLoading(true);
+    const contributionData = { valor: parseFloat(valor), data };
+    const promise = addGoalContribution(goal.id, contributionData);
 
-        setLoading(true);
-        const contributionData = {
-            valor: parseFloat(valor),
-            data,
-            // conta_origem_id: contaOrigemId || null, // Upgrade 2
-        };
+    try {
+      const response = await toast.promise(promise, {
+        loading: "Registrando aporte...",
+        success: "Aporte registrado com sucesso!",
+        error: (err) => err.response?.data?.error || "Falha ao registrar aporte.",
+      });
+      onSuccess(response.data);
+    } catch (error) {
+      console.error("Erro ao adicionar aporte:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        const promise = addGoalContribution(goal.id, contributionData);
+  if (!isOpen || !goal) return null;
 
-        try {
-            const response = await toast.promise(promise, {
-                loading: 'Registrando aporte...',
-                success: 'Aporte registrado com sucesso!',
-                error: (err) => err.response?.data?.error || 'Falha ao registrar aporte.',
-            });
-            onSuccess(response.data);
-        } catch (error) {
-            console.error("Erro ao adicionar aporte:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Aportar para: ${goal.titulo}`}>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="aporteValor" className={labelClasses}>
+            Valor do Aporte
+          </label>
+          <div className="relative mt-1">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft dark:text-ink-soft-dark font-mono text-sm pointer-events-none">
+              R$
+            </span>
+            <input
+              type="number"
+              id="aporteValor"
+              step="0.01"
+              required
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              placeholder="0,00"
+              className={`${inputClasses} mt-0 pl-9 font-mono`}
+            />
+          </div>
+        </div>
 
-    if (!isOpen || !goal) return null;
+        <div>
+          <label htmlFor="aporteData" className={labelClasses}>
+            Data do Aporte
+          </label>
+          <input
+            type="date"
+            id="aporteData"
+            required
+            value={data}
+            onChange={(e) => setData(e.target.value)}
+            max={new Date().toISOString().split("T")[0]}
+            className={`${inputClasses} font-mono`}
+          />
+        </div>
 
-    return (
-        <Modal isOpen={isOpen} onClose={onClose} title={`Aportar para: ${goal.titulo}`}>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="aporteValor" className="block text-sm font-medium text-gray-700">Valor do Aporte (R$)</label>
-                    <input
-                        type="number"
-                        id="aporteValor"
-                        step="0.01"
-                        required
-                        value={valor}
-                        onChange={(e) => setValor(e.target.value)}
-                        placeholder="0,00"
-                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="aporteData" className="block text-sm font-medium text-gray-700">Data do Aporte</label>
-                    <input
-                        type="date"
-                        id="aporteData"
-                        required
-                        value={data}
-                        onChange={(e) => setData(e.target.value)}
-                        max={new Date().toISOString().split("T")[0]} // Não permitir datas futuras
-                        className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md"
-                    />
-                </div>
-
-                {/* --- CAMPO CONTA ORIGEM (Upgrade 2) --- */}
-                {/*
-                {goal.accountId && ( // Mostra só se a meta estiver vinculada
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Conta de Origem (Opcional)</label>
-                        <select value={contaOrigemId} onChange={(e) => setContaOrigemId(e.target.value)} className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md">
-                            <option value="">Manual (Não mover fundos)</option>
-                            {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
-                        </select>
-                         <p className="text-xs text-gray-500 mt-1">Selecione para transferir automaticamente o valor desta conta para a conta da meta.</p>
-                    </div>
-                )}
-                */}
-                {/* ------------------------------------ */}
-
-
-                <div className="flex justify-end pt-2 gap-3">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        disabled={loading}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
-                    >
-                        Cancelar
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="px-4 py-2 font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:bg-gray-400"
-                    >
-                        {loading ? 'Salvando...' : 'Salvar Aporte'}
-                    </button>
-                </div>
-            </form>
-        </Modal>
-    );
+        <div className="flex justify-end gap-3 pt-2">
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium border border-rule dark:border-rule-dark text-ink dark:text-ink-dark rounded-lg hover:bg-paper dark:hover:bg-paper-dark transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 text-sm font-medium text-paper-raised dark:text-paper-dark bg-receita dark:bg-receita-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {loading ? "Salvando..." : "Salvar Aporte"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
 
 export default ContributeModal;
