@@ -9,19 +9,19 @@ module.exports = {
         autoIncrement: true,
         allowNull: false,
       },
-      user_id: { // Para garantir que a contribuição pertence ao usuário
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'users', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      goal_id: { // Chave estrangeira para a Meta
+      goal_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: { model: 'goals', key: 'id' },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE', // Se a meta for excluída, as contribuições somem
+        onDelete: 'CASCADE', 
       },
       valor: {
         type: Sequelize.DECIMAL(10, 2),
@@ -40,7 +40,6 @@ module.exports = {
         allowNull: false,
       },
     });
-    // Adicionar índices para performance
     await queryInterface.addIndex('goal_contributions', ['user_id']);
     await queryInterface.addIndex('goal_contributions', ['goal_id']);
   },

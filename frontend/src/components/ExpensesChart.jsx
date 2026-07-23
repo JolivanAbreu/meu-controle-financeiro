@@ -9,18 +9,15 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#3E6B52", // receita / verde principal
-  "#6B8F7A", // verde-sálvia
-  "#A2432E", // despesa / terracota
-  "#C77B5F", // terracota claro
-  "#2E4A5C", // slate (accent)
-  "#B8BFB3", // cinza neutro
+  "#3E6B52",
+  "#6B8F7A",
+  "#A2432E",
+  "#C77B5F",
+  "#2E4A5C",
+  "#B8BFB3",
 ];
 
 const ExpensesChart = ({ transactions }) => {
-  // Agrupa despesas por categoria e calcula o total geral. Usa a cor
-  // cadastrada na categoria (tela de Categorias) quando existir; senão,
-  // cai na paleta fixa por posição, como antes.
   const { data, totalDespesas } = useMemo(() => {
     const categoriesMap = transactions
       .filter((t) => t.tipo === "despesa")

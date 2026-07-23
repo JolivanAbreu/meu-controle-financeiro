@@ -203,16 +203,36 @@ function CardsPage() {
 
     // Próximo vencimento: menor distância em dias até o dia de vencimento de cada cartão.
     const hoje = new Date();
-    const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const hojeSemHora = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      hoje.getDate(),
+    );
     let proximoVencimento = null;
 
     fisicos.forEach((f) => {
       if (!f.diaVencimento) return;
-      const lastDayThisMonth = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
-      let venc = new Date(hoje.getFullYear(), hoje.getMonth(), Math.min(f.diaVencimento, lastDayThisMonth));
+      const lastDayThisMonth = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth() + 1,
+        0,
+      ).getDate();
+      let venc = new Date(
+        hoje.getFullYear(),
+        hoje.getMonth(),
+        Math.min(f.diaVencimento, lastDayThisMonth),
+      );
       if (venc < hojeSemHora) {
-        const lastDayNextMonth = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0).getDate();
-        venc = new Date(hoje.getFullYear(), hoje.getMonth() + 1, Math.min(f.diaVencimento, lastDayNextMonth));
+        const lastDayNextMonth = new Date(
+          hoje.getFullYear(),
+          hoje.getMonth() + 2,
+          0,
+        ).getDate();
+        venc = new Date(
+          hoje.getFullYear(),
+          hoje.getMonth() + 1,
+          Math.min(f.diaVencimento, lastDayNextMonth),
+        );
       }
       const diffDias = Math.round((venc - hojeSemHora) / (1000 * 60 * 60 * 24));
       if (!proximoVencimento || diffDias < proximoVencimento.diffDias) {
@@ -231,7 +251,12 @@ function CardsPage() {
       }
     });
 
-    return { disponibilidadeTotal, faturaAbertaTotal, proximoVencimento, alerta };
+    return {
+      disponibilidadeTotal,
+      faturaAbertaTotal,
+      proximoVencimento,
+      alerta,
+    };
   }, [fisicos]);
 
   const handleVerFatura = async (card) => {
@@ -368,7 +393,9 @@ function CardsPage() {
                 </p>
               </>
             ) : (
-              <p className="text-sm text-ink-soft dark:text-ink-soft-dark mt-1">—</p>
+              <p className="text-sm text-ink-soft dark:text-ink-soft-dark mt-1">
+                —
+              </p>
             )}
           </div>
 
@@ -407,8 +434,8 @@ function CardsPage() {
           editingCard
             ? "Editar Cartão"
             : novoVirtualPara
-            ? `Novo cartão virtual — ${novoVirtualPara.nome}`
-            : "Adicionar Novo Cartão"
+              ? `Novo cartão virtual — ${novoVirtualPara.nome}`
+              : "Adicionar Novo Cartão"
         }
       >
         <CardForm
@@ -426,7 +453,9 @@ function CardsPage() {
         title={`Histórico — ${historicoCard?.nome || ""}`}
       >
         {historicoLoading ? (
-          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">Carregando...</p>
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
+            Carregando...
+          </p>
         ) : historicoData.length === 0 ? (
           <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
             Sem dados suficientes para exibir o histórico.
@@ -470,7 +499,9 @@ function CardsPage() {
         title={`Fatura — ${faturaCard?.nome || ""}`}
       >
         {faturaLoading ? (
-          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">Carregando...</p>
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
+            Carregando...
+          </p>
         ) : faturaData.length === 0 ? (
           <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
             Nenhuma despesa nesta fatura.
@@ -522,7 +553,8 @@ function CardsPage() {
         isOpen={!!pendingDelete}
         title="Excluir cartão"
         message={
-          pendingDelete?.tipo === "fisico" && (virtuaisPorPai[pendingDelete.id] || []).length > 0
+          pendingDelete?.tipo === "fisico" &&
+          (virtuaisPorPai[pendingDelete.id] || []).length > 0
             ? `Tem certeza que deseja apagar "${pendingDelete.nome}"? Os ${
                 virtuaisPorPai[pendingDelete.id].length
               } cartão(ões) virtual(is) vinculado(s) também serão apagados. As transações já lançadas não serão excluídas, só perderão o vínculo com o cartão.`
@@ -611,8 +643,10 @@ function CardsPage() {
                     />
                   </div>
                   <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1.5">
-                    {fisico.faturaAberta ? "Fatura em aberto" : "Fatura fechada"} ·
-                    fecha dia {fisico.diaFechamento} · vence dia{" "}
+                    {fisico.faturaAberta
+                      ? "Fatura em aberto"
+                      : "Fatura fechada"}{" "}
+                    · fecha dia {fisico.diaFechamento} · vence dia{" "}
                     {fisico.diaVencimento}
                   </p>
                 </div>

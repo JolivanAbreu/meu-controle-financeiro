@@ -1,17 +1,17 @@
 // frontend/src/pages/CategoriesPage.jsx
 
-import React, { useState, useEffect } from 'react';
-import toast from 'react-hot-toast'; // Importar toast
-import { FaEdit, FaTrash } from 'react-icons/fa'; // Importar ícones
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
+import { FaEdit, FaTrash } from "react-icons/fa";
 import {
   getCategories,
   getSubcategories,
   createSubcategory,
-  updateSubcategory, // Importar nova função
-  deleteSubcategory, // Importar nova função
+  updateSubcategory,
+  deleteSubcategory,
   updateCategory,
-} from '../services/categoryService';
-import Modal from '../components/Modal'; // Importar o Modal
+} from "../services/categoryService";
+import Modal from "../components/Modal";
 
 const inputClasses =
   "w-full px-3 py-2 mt-1 rounded-lg border border-rule dark:border-rule-dark " +
@@ -21,13 +21,14 @@ const inputClasses =
   "disabled:bg-rule/40 dark:disabled:bg-rule-dark/40 disabled:text-ink-soft dark:disabled:text-ink-soft-dark " +
   "transition-colors";
 
-const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
+const labelClasses =
+  "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
 
 function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [newName, setNewName] = useState('');
-  const [selectedCatId, setSelectedCatId] = useState('');
+  const [newName, setNewName] = useState("");
+  const [selectedCatId, setSelectedCatId] = useState("");
   const [loading, setLoading] = useState(true);
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -35,30 +36,37 @@ function CategoriesPage() {
   // Estados dos modais
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [editingSubcategory, setEditingSubcategory] = useState(null); // Guarda a subcat sendo editada
-  const [deletingSubcategory, setDeletingSubcategory] = useState(null); // Guarda a subcat a ser deletada
+  const [editingSubcategory, setEditingSubcategory] = useState(null);
+  const [deletingSubcategory, setDeletingSubcategory] = useState(null);
 
   // Estados do formulário de edição
-  const [editName, setEditName] = useState('');
-  const [editCategoryId, setEditCategoryId] = useState('');
+  const [editName, setEditName] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState("");
 
   const loadData = async () => {
-     try {
-       setLoading(true);
-       const [catRes, subcatRes] = await Promise.all([ getCategories(), getSubcategories() ]);
-       setCategories(catRes.data);
-       setSubcategories(subcatRes.data);
-       if (catRes.data.length > 0 && !selectedCatId) { setSelectedCatId(catRes.data[0].id); }
-     } catch (err) {
-       console.error("Erro ao carregar dados", err);
-       setError("Falha ao carregar dados. Tente novamente mais tarde.");
-     } finally {
-       setLoading(false);
-     }
-   };
-  useEffect(() => { loadData(); }, [selectedCatId]); // Removido selectedCatId das dependências para evitar recarregamento constante
+    try {
+      setLoading(true);
+      const [catRes, subcatRes] = await Promise.all([
+        getCategories(),
+        getSubcategories(),
+      ]);
+      setCategories(catRes.data);
+      setSubcategories(subcatRes.data);
+      if (catRes.data.length > 0 && !selectedCatId) {
+        setSelectedCatId(catRes.data[0].id);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar dados", err);
+      setError("Falha ao carregar dados. Tente novamente mais tarde.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    loadData();
+  }, [selectedCatId]); 
 
-  // --- NOVO: troca a cor de uma categoria (usada nos gráficos) ---
+  // --- Troca a cor de uma categoria (usada nos gráficos) ---
   const handleCorChange = async (category, cor) => {
     // Atualização otimista: reflete na tela antes da resposta do servidor.
     setCategories((prev) =>
@@ -70,41 +78,56 @@ function CategoriesPage() {
       console.error("Erro ao atualizar cor da categoria:", err);
       toast.error("Não foi possível salvar a cor.");
       setCategories((prev) =>
-        prev.map((c) => (c.id === category.id ? { ...c, cor: category.cor } : c)),
+        prev.map((c) =>
+          c.id === category.id ? { ...c, cor: category.cor } : c,
+        ),
       );
     }
   };
 
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (!newName || !selectedCatId) { setError("Preencha todos os campos."); return; }
-      setFormLoading(true); setError(null);
-      try {
-        const response = await createSubcategory({ name: newName, categoryId: parseInt(selectedCatId, 10) });
-        setSubcategories(prevSubcategories => [...prevSubcategories, response.data].sort((a, b) => a.name.localeCompare(b.name))); // Adiciona e ordena
-        setNewName('');
-        toast.success("Subcategoria criada!"); // Adiciona toast
-      } catch (err) {
-        console.error("Erro ao criar subcategoria", err);
-        setError(err.response?.data?.error || "Erro ao criar subcategoria.");
-        toast.error(err.response?.data?.error || "Erro ao criar."); // Adiciona toast de erro
-      } finally { setFormLoading(false); }
+    e.preventDefault();
+    if (!newName || !selectedCatId) {
+      setError("Preencha todos os campos.");
+      return;
+    }
+    setFormLoading(true);
+    setError(null);
+    try {
+      const response = await createSubcategory({
+        name: newName,
+        categoryId: parseInt(selectedCatId, 10),
+      });
+      setSubcategories((prevSubcategories) =>
+        [...prevSubcategories, response.data].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        ),
+      );
+      setNewName("");
+      toast.success("Subcategoria criada!");
+    } catch (err) {
+      console.error("Erro ao criar subcategoria", err);
+      setError(err.response?.data?.error || "Erro ao criar subcategoria.");
+      toast.error(err.response?.data?.error || "Erro ao criar.");
+    } finally {
+      setFormLoading(false);
+    }
   };
 
   // Handlers de edição
   const handleEditClick = (subcategory) => {
-    setEditingSubcategory(subcategory); // Guarda a subcategoria completa
-    setEditName(subcategory.name);     // Preenche o estado do nome para o form
-    setEditCategoryId(subcategory.categoryId); // Preenche o estado da categoria para o form
-    setError(null); // Limpa erros antigos
-    setIsEditModalOpen(true);          // Abre o modal de edição
+    setEditingSubcategory(subcategory);
+    setEditName(subcategory.name);
+    setEditCategoryId(subcategory.categoryId);
+    setError(null);
+    setIsEditModalOpen(true);
   };
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
     if (!editName || !editCategoryId || !editingSubcategory) return;
 
-    setFormLoading(true); // Reutiliza o estado de loading do formulário
+    setFormLoading(true);
     setError(null);
 
     try {
@@ -114,14 +137,17 @@ function CategoriesPage() {
       });
 
       // Atualiza a lista de subcategorias no estado local
-      setSubcategories(prev =>
-        prev.map(sub => (sub.id === editingSubcategory.id ? updatedData.data : sub))
-          .sort((a, b) => a.name.localeCompare(b.name)) // Reordena
+      setSubcategories(
+        (prev) =>
+          prev
+            .map((sub) =>
+              sub.id === editingSubcategory.id ? updatedData.data : sub,
+            )
+            .sort((a, b) => a.name.localeCompare(b.name)),
       );
 
       toast.success("Subcategoria atualizada!");
-      closeEditModal(); // Fecha o modal
-
+      closeEditModal();
     } catch (err) {
       console.error("Erro ao atualizar subcategoria", err);
       setError(err.response?.data?.error || "Erro ao atualizar subcategoria.");
@@ -134,43 +160,47 @@ function CategoriesPage() {
   const closeEditModal = () => {
     setIsEditModalOpen(false);
     setEditingSubcategory(null);
-    setEditName('');
-    setEditCategoryId('');
+    setEditName("");
+    setEditCategoryId("");
   };
 
   // Handlers de exclusão
   const handleDeleteClick = (subcategory) => {
-    setDeletingSubcategory(subcategory); // Guarda a subcategoria a ser deletada
-    setError(null); // Limpa erros
-    setIsDeleteModalOpen(true); // Abre o modal de confirmação
+    setDeletingSubcategory(subcategory);
+    setError(null);
+    setIsDeleteModalOpen(true);
   };
 
   const handleDeleteConfirm = async () => {
     if (!deletingSubcategory) return;
 
-    setFormLoading(true); // Reutiliza loading
+    setFormLoading(true);
     setError(null);
 
     try {
       await deleteSubcategory(deletingSubcategory.id);
 
       // Remove a subcategoria da lista local
-      setSubcategories(prev =>
-        prev.filter(sub => sub.id !== deletingSubcategory.id)
+      setSubcategories((prev) =>
+        prev.filter((sub) => sub.id !== deletingSubcategory.id),
       );
 
       toast.success("Subcategoria excluída!");
       closeDeleteModal(); // Fecha o modal
-
     } catch (err) {
       console.error("Erro ao excluir subcategoria", err);
       // Verifica se o erro é por causa de transações vinculadas (exemplo, pode variar)
-      if (err.response?.status === 500 && err.response?.data?.error?.includes('constraint')) {
-         setError("Não é possível excluir: existem transações vinculadas a esta subcategoria.");
-         toast.error("Não é possível excluir: existem transações vinculadas.");
+      if (
+        err.response?.status === 500 &&
+        err.response?.data?.error?.includes("constraint")
+      ) {
+        setError(
+          "Não é possível excluir: existem transações vinculadas a esta subcategoria.",
+        );
+        toast.error("Não é possível excluir: existem transações vinculadas.");
       } else {
-         setError(err.response?.data?.error || "Erro ao excluir subcategoria.");
-         toast.error(err.response?.data?.error || "Erro ao excluir.");
+        setError(err.response?.data?.error || "Erro ao excluir subcategoria.");
+        toast.error(err.response?.data?.error || "Erro ao excluir.");
       }
     } finally {
       setFormLoading(false);
@@ -210,7 +240,9 @@ function CategoriesPage() {
           Criar Nova Subcategoria
         </h2>
         {error && !isEditModalOpen && !isDeleteModalOpen && (
-          <p className="text-despesa dark:text-despesa-dark mb-4 text-sm">{error}</p>
+          <p className="text-despesa dark:text-despesa-dark mb-4 text-sm">
+            {error}
+          </p>
         )}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-1">
@@ -223,8 +255,10 @@ function CategoriesPage() {
               onChange={(e) => setSelectedCatId(e.target.value)}
               className={inputClasses}
             >
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
               ))}
             </select>
           </div>
@@ -247,7 +281,7 @@ function CategoriesPage() {
               disabled={formLoading}
               className="w-full mt-1 bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-5 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
-              {formLoading ? 'Salvando...' : 'Salvar'}
+              {formLoading ? "Salvando..." : "Salvar"}
             </button>
           </div>
         </div>
@@ -255,9 +289,11 @@ function CategoriesPage() {
 
       {/* Lista de categorias e subcategorias */}
       <div className="space-y-4">
-        {categories.map(cat => {
+        {categories.map((cat) => {
           // Filtra subcategorias desta categoria ANTES do map
-          const currentSubcategories = subcategories.filter(sub => sub.categoryId === cat.id);
+          const currentSubcategories = subcategories.filter(
+            (sub) => sub.categoryId === cat.id,
+          );
 
           return (
             <div
@@ -279,7 +315,7 @@ function CategoriesPage() {
 
               {currentSubcategories.length > 0 ? (
                 <ul className="mt-2 divide-y divide-rule dark:divide-rule-dark">
-                  {currentSubcategories.map(sub => (
+                  {currentSubcategories.map((sub) => (
                     <li
                       key={sub.id}
                       className="flex justify-between items-center py-2.5 text-sm text-ink dark:text-ink-dark"
@@ -324,7 +360,9 @@ function CategoriesPage() {
       >
         <form onSubmit={handleUpdateSubmit} className="space-y-4">
           {error && isEditModalOpen && (
-            <p className="text-despesa dark:text-despesa-dark text-sm">{error}</p>
+            <p className="text-despesa dark:text-despesa-dark text-sm">
+              {error}
+            </p>
           )}
           <div>
             <label htmlFor="editCategory" className={labelClasses}>
@@ -336,8 +374,10 @@ function CategoriesPage() {
               onChange={(e) => setEditCategoryId(e.target.value)}
               className={inputClasses}
             >
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
               ))}
             </select>
           </div>
@@ -367,7 +407,7 @@ function CategoriesPage() {
               disabled={formLoading}
               className="px-4 py-2 text-sm font-medium bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
-              {formLoading ? 'Salvando...' : 'Salvar Alterações'}
+              {formLoading ? "Salvando..." : "Salvar Alterações"}
             </button>
           </div>
         </form>
@@ -385,11 +425,15 @@ function CategoriesPage() {
             <strong className="mx-1">{deletingSubcategory?.name}</strong>?
             <br />
             <span className="text-xs text-despesa dark:text-despesa-dark">
-              Atenção: Esta ação não pode ser desfeita. Verifique o comportamento esperado para transações vinculadas (excluir ou desvincular).
+              Atenção: Esta ação não pode ser desfeita. Verifique o
+              comportamento esperado para transações vinculadas (excluir ou
+              desvincular).
             </span>
           </p>
           {error && isDeleteModalOpen && (
-            <p className="text-despesa dark:text-despesa-dark text-sm mb-4">{error}</p>
+            <p className="text-despesa dark:text-despesa-dark text-sm mb-4">
+              {error}
+            </p>
           )}
           <div className="flex justify-end gap-3">
             <button
@@ -404,7 +448,7 @@ function CategoriesPage() {
               disabled={formLoading}
               className="px-4 py-2 text-sm font-medium bg-despesa dark:bg-despesa-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
-              {formLoading ? 'Excluindo...' : 'Excluir'}
+              {formLoading ? "Excluindo..." : "Excluir"}
             </button>
           </div>
         </div>

@@ -71,7 +71,7 @@ class ReportController {
 
             if (outrosSubcatIds.length === 0) {
                 console.log("Usuário não tem subcategorias 'Outros' para filtrar por palavra-chave.");
-                return []; // Não há subcategorias "Outros" para buscar
+                return [];
             }
 
             // Adiciona a condição AND diretamente ao whereClause principal
@@ -79,26 +79,21 @@ class ReportController {
                 { subcategoryId: { [Op.in]: outrosSubcatIds } },
                 { descricao: { [Op.like]: `%${keywords}%` } }
             ];
-            // NÃO USAREMOS filterConditions ou Op.or neste caso
 
         }
-        // TODOS OS OUTROS CASOS (Múltiplas categorias, subcategorias específicas, Outros sem keyword, etc.)
         else {
             console.log("Aplicando filtros combinados (OR)...");
             const filterConditions = [];
 
-            // Condição A: Subcategorias específicas selecionadas
             if (specificSubcatsSelected) {
                 console.log("Adicionando filtro por subcategorias específicas:", subcategories);
                 filterConditions.push({
                     subcategoryId: { [Op.in]: subcategories },
                 });
             }
-            // Condição B: Categorias selecionadas, mas sem subcategorias específicas
-            // (Inclui todas as subcats dessas categorias, exceto 'Outros' se keywords foram dadas para ele)
             else if (categories.length > 0) {
                 console.log("Adicionando filtro por categorias (todas as subcats):", categories);
-                const includeCategoryIds = categories.filter(catId => !(catId === outrosId && keywordsProvided)); // Exclui 'Outros' se keywords foram fornecidas para ele
+                const includeCategoryIds = categories.filter(catId => !(catId === outrosId && keywordsProvided));
 
                 if (includeCategoryIds.length > 0) {
                     const subcatsInCategory = await Subcategory.findAll({
@@ -112,7 +107,6 @@ class ReportController {
                 }
             }
 
-            // Condição C: "Outros" selecionado E com Palavras-Chave (adiciona como condição OR)
             if (outrosId && categories.includes(outrosId) && keywordsProvided) {
                 console.log("Adicionando filtro 'Outros' com palavra-chave como condição OR:", keywords);
                 const outrosSubcats = await Subcategory.findAll({ where: { categoryId: outrosId, userId }, attributes: ["id"] });
@@ -128,17 +122,14 @@ class ReportController {
                 }
             }
 
-            // Aplica as condições OR se houver alguma
             if (filterConditions.length > 0) {
                 whereClause[Op.or] = filterConditions;
             } else if (categories.length === 0 && !specificSubcatsSelected) {
-                // Se realmente NENHUM filtro de categoria/subcategoria foi aplicado
                 console.log("Nenhuma categoria ou subcategoria selecionada para filtrar.");
                 return [];
             }
-        } // Fim do else (casos combinados)
+        }
 
-        // 4. Executa a query (continua igual)
         console.log("Executando query final com whereClause:", JSON.stringify(whereClause, null, 2));
         const transactions = await Transaction.findAll({
             where: whereClause,

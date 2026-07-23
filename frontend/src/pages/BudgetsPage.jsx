@@ -40,7 +40,7 @@ function BudgetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
 
-  // --- NOVO: filtro de mês/ano (o endpoint já suporta, só não era usado aqui) ---
+  // --- Filtro de mês/ano (o endpoint já suporta, só não era usado aqui) ---
   const [mesSelecionado, setMesSelecionado] = useState(
     new Date().getMonth() + 1,
   );
@@ -105,7 +105,7 @@ function BudgetsPage() {
     }
   };
 
-  // --- NOVO: resumo do período selecionado ---
+  // --- Resumo do período selecionado ---
   const summary = useMemo(() => {
     const totalLimite = budgets.reduce(
       (sum, b) => sum + parseFloat(b.limite || 0),
@@ -122,7 +122,7 @@ function BudgetsPage() {
     return { totalLimite, totalGasto, percentual, ultrapassados };
   }, [budgets]);
 
-  // --- NOVO: ordena pelos orçamentos mais "no limite" primeiro ---
+  // --- Ordena pelos orçamentos mais "no limite" primeiro ---
   const sortedBudgets = useMemo(() => {
     return [...budgets].sort((a, b) => {
       const pctA = a.limite > 0 ? a.gasto_atual / a.limite : 0;
@@ -262,7 +262,9 @@ function BudgetsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sortedBudgets.map((budget) => {
             const percentualGasto =
-              budget.limite > 0 ? (budget.gasto_atual / budget.limite) * 100 : 0;
+              budget.limite > 0
+                ? (budget.gasto_atual / budget.limite) * 100
+                : 0;
             const isOver = percentualGasto > 100;
 
             return (
@@ -276,7 +278,8 @@ function BudgetsPage() {
                       {budget.categoria}
                     </h3>
                     <span className="text-xs text-ink-soft dark:text-ink-soft-dark">
-                      {MESES.find((m) => m.valor === budget.mes)?.nome} / {budget.ano}
+                      {MESES.find((m) => m.valor === budget.mes)?.nome} /{" "}
+                      {budget.ano}
                     </span>
                   </div>
                   <div className="flex gap-1">
@@ -335,8 +338,9 @@ function BudgetsPage() {
 
                 {budget.categoriaValida === false && (
                   <p className="text-despesa dark:text-despesa-dark text-xs mt-2">
-                    Categoria "{budget.categoria}" não foi reconhecida automaticamente.
-                    Edite este orçamento e selecione a categoria novamente.
+                    Categoria "{budget.categoria}" não foi reconhecida
+                    automaticamente. Edite este orçamento e selecione a
+                    categoria novamente.
                   </p>
                 )}
               </div>

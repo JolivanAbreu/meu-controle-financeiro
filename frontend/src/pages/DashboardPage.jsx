@@ -44,7 +44,6 @@ const formatDate = (dateString) =>
   new Date(dateString).toLocaleDateString("pt-BR", { timeZone: "UTC" });
 
 function DashboardPage() {
-  // Transações do período de 6 meses (usadas para o mês atual + gráfico de tendência)
   const [rangeTransactions, setRangeTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,8 +64,6 @@ function DashboardPage() {
   const fetchTransactions = useCallback(async () => {
     try {
       setLoading(true);
-      // Busca uma janela de 6 meses (termina no mês/ano selecionado),
-      // usada tanto para a tabela do mês quanto para o gráfico de tendência.
       const startDate = new Date(anoSelecionado, mesSelecionado - 6, 1)
         .toISOString()
         .split("T")[0];
@@ -234,7 +231,6 @@ function DashboardPage() {
     setTransactionToDelete(null);
   };
 
-  // FUNÇÃO CORRIGIDA: Decide se abre o modal de recorrência ou deleta direto
   const handleDeleteClick = (transaction) => {
     if (transaction.recurrence === "fixo" && transaction.recurrence_group_id) {
       setTransactionToDelete(transaction);

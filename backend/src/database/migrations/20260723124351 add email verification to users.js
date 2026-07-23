@@ -12,8 +12,6 @@ module.exports = {
       allowNull: true,
     });
 
-    // Usuários já existentes não devem ficar travados por uma funcionalidade
-    // que não existia quando eles se cadastraram.
     await queryInterface.sequelize.query(`
       UPDATE users SET email_verified = true WHERE email_verified = false
     `);

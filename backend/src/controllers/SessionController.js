@@ -13,8 +13,7 @@ class SessionController {
       if (!user) {
         return res.status(401).json({ error: "Usuário não encontrado." });
       }
-
-      // LINHA NOVA (CORRETA)
+      
       const isPasswordCorrect = await bcrypt.compare(senha, user.senha_hash);
       if (!isPasswordCorrect) {
         return res.status(401).json({ error: "Senha incorreta." });

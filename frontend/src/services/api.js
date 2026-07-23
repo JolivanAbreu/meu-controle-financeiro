@@ -14,18 +14,16 @@ api.interceptors.request.use(async (config) => {
 });
 
 // --- Autenticação ---
-// (Assumindo que suas rotas de login/registro são /api/login e /api/register)
-// Se elas não tiverem o /api, talvez precisemos ajustar
 export const login = (email, password) => api.post('/login', { email, password });
 export const register = (name, email, password) => api.post('/register', { name, email, password });
-// export const getUser = () => api.get('/users'); // Descomente se tiver essa rota
+// export const getUser = () => api.get('/users');
 
 // --- Transações ---
 export const getTransactions = (params) => api.get('/transactions', { params });
 export const addTransaction = (transaction) => api.post('/transactions', transaction);
 export const updateTransaction = (id, transaction) => api.put(`/transactions/${id}`, transaction);
 export const deleteTransaction = (id) => api.delete(`/transactions/${id}`);
-// export const getSummary = () => api.get('/transactions/summary'); // Descomente se tiver essa rota
+// export const getSummary = () => api.get('/transactions/summary');
 
 // --- Categorias ---
 export const getCategories = () => api.get('/categories');

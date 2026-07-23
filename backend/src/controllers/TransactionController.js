@@ -25,9 +25,6 @@ class TransactionController {
       } = req.query;
       const userId = req.userId;
 
-      // Paginação é OPCIONAL: só ativa se page/limit forem enviados, preservando
-      // o comportamento antigo (array simples) para quem não usa esses parâmetros
-      // (Dashboard e Relatórios continuam recebendo array puro).
       const isPaginated = !!(page || limit);
       const pageNum = Math.max(parseInt(page, 10) || 1, 1);
       const limitNum = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
@@ -48,7 +45,6 @@ class TransactionController {
         }
       }
 
-      // NOVO: busca livre por texto na descrição (usada pela tela de Transações)
       if (q && q.trim() !== '') {
         whereCondition.descricao = { [Op.like]: `%${q.trim()}%` };
       }
@@ -63,10 +59,8 @@ class TransactionController {
       const onlyOutrosSelected = categories.length === 1 && categories[0] === outrosId;
       const specificSubcatsSelected = subcategories.length > 0;
 
-      // Filtro por categoria/subcategoria/palavras-chave (só entra se algo foi selecionado)
       if (categories.length > 0 || specificSubcatsSelected || (onlyOutrosSelected && keywordsProvided)) {
 
-        // Caso especial: só "Outros" + palavra-chave, sem subcategorias específicas
         if (onlyOutrosSelected && keywordsProvided && !specificSubcatsSelected) {
           if (outrosId) {
             const outrosSubcats = await Subcategory.findAll({ where: { categoryId: outrosId, userId }, attributes: ['id'] });
@@ -84,7 +78,6 @@ class TransactionController {
             return emptyResponse();
           }
         }
-        // Demais casos: categorias e/ou subcategorias combinadas
         else {
           const filterConditions = [];
 
@@ -214,7 +207,6 @@ class TransactionController {
         return res.status(201).json(transaction);
       }
 
-      // Recorrência fixa: replica a transação por N meses, todas com o mesmo recurrence_group_id
       const totalMonths = parseInt(installments, 10);
       const recurrenceGroupId = uuidv4();
       const startDate = parseISO(data);

@@ -8,9 +8,6 @@ const CARD_HEIGHT = 150;
 const OFFSET_X = 18;
 const OFFSET_Y = 14;
 
-// cards: array com o cartão físico na posição 0, seguido dos virtuais vinculados.
-// O cartão "da frente" começa sendo o físico; clicar em qualquer cartão atrás
-// da pilha o traz para frente, com uma transição suave (efeito carrossel).
 function CardStack({ cards, titular, onHistory, onEdit, onDelete }) {
   const [frontId, setFrontId] = useState(cards[0]?.id);
 

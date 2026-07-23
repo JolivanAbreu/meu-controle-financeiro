@@ -9,7 +9,7 @@ export const getCategories = () => {
 /**
  * Atualiza a cor de uma categoria (usada nos gráficos).
  * @param {number} id
- * @param {object} data - { cor: '#3E6B52' }
+ * @param {object} data -
  */
 export const updateCategory = (id, data) => {
   return api.put(`/categories/${id}`, data);
@@ -21,7 +21,7 @@ export const getSubcategories = () => {
 
 /**
  * Cria uma nova subcategoria.
- * @param {object} data - { name: 'Nome', categoryId: 1 }
+ * @param {object} data
  */
 export const createSubcategory = (data) => {
   return api.post('/subcategories', data);
@@ -29,8 +29,8 @@ export const createSubcategory = (data) => {
 
 /**
  * Atualiza uma subcategoria existente.
- * @param {number} id - ID da subcategoria a ser atualizada.
- * @param {object} data - { name: 'Novo Nome', categoryId: 2 }
+ * @param {number} id
+ * @param {object} data 
  */
 export const updateSubcategory = (id, data) => {
   return api.put(`/subcategories/${id}`, data);
@@ -38,7 +38,7 @@ export const updateSubcategory = (id, data) => {
 
 /**
  * Deleta uma subcategoria.
- * @param {number} id - ID da subcategoria a ser deletada.
+ * @param {number} id 
  */
 export const deleteSubcategory = (id) => {
   return api.delete(`/subcategories/${id}`);

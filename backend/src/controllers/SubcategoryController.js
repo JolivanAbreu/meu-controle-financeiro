@@ -7,7 +7,6 @@ const Category = require('../models/Category'); // Precisamos para o 'include' n
 class SubcategoryController {
   // --- MÉTODO INDEX ---
   async index(req, res) {
-    // ... seu código index ...
     try {
       const subcategories = await Subcategory.findAll({
         where: { userId: req.userId },
@@ -25,7 +24,6 @@ class SubcategoryController {
 
   // --- MÉTODO STORE ---
   async store(req, res) {
-    // ... seu código store ...
      const schema = Yup.object().shape({
        name: Yup.string().required('O nome é obrigatório.'),
        categoryId: Yup.number().integer().required('A categoria é obrigatória.'),
@@ -52,9 +50,8 @@ class SubcategoryController {
 
   // --- NOVO MÉTODO: UPDATE ---
   async update(req, res) {
-    const { id } = req.params; // Pega o ID da URL
+    const { id } = req.params;
 
-    // Schema de validação para o corpo da requisição
     const schema = Yup.object().shape({
       name: Yup.string().required('O nome é obrigatório.'),
       categoryId: Yup.number().integer().required('A categoria é obrigatória.'),
@@ -93,9 +90,9 @@ class SubcategoryController {
     }
   }
 
-  // --- NOVO MÉTODO: DESTROY ---
+  // --- MÉTODO DESTROY ---
   async destroy(req, res) {
-    const { id } = req.params; // Pega o ID da URL
+    const { id } = req.params;
 
     try {
       // 1. Encontra a subcategoria E verifica se pertence ao usuário logado
@@ -109,9 +106,6 @@ class SubcategoryController {
       }
 
       // 3. Deleta a subcategoria
-      // ATENÇÃO: Verifique o 'onDelete' na sua migration de 'transactions'
-      // Se for 'SET NULL', as transações ficarão sem subcategoria.
-      // Se for 'CASCADE', as transações associadas serão excluídas!
       await subcategory.destroy();
 
       // 4. Retorna sucesso sem conteúdo
@@ -119,7 +113,6 @@ class SubcategoryController {
 
     } catch (error) {
       console.error("ERRO AO DELETAR SUBCATEGORIA:", error);
-      // Pode falhar se houver restrições de chave estrangeira inesperadas
       return res.status(500).json({ error: 'Erro ao deletar subcategoria.' });
     }
   }

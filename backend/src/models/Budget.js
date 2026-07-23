@@ -6,9 +6,6 @@ class Budget extends Model {
     static init(sequelize) {
         super.init(
             {
-                // Mantido por compatibilidade (exibição) — passa a ser preenchido
-                // automaticamente a partir de category.name, nunca mais digitado
-                // livremente pelo usuário.
                 categoria: DataTypes.STRING,
                 categoryId: {
                     type: DataTypes.INTEGER,

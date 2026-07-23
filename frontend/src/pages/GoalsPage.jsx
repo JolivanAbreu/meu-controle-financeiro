@@ -7,7 +7,11 @@ import GoalForm from "../components/GoalForm";
 import ContributeModal from "../components/ContributeModal";
 import { FaEdit, FaTrash, FaPlusCircle, FaHistory } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { getGoals, deleteGoal, getGoalContributions } from "../services/goalService";
+import {
+  getGoals,
+  deleteGoal,
+  getGoalContributions,
+} from "../services/goalService";
 
 // Badge de Status (recolorido com os tokens do sistema)
 const STATUS_STYLES = {
@@ -57,7 +61,7 @@ const progressBarColor = (status) => {
   return "bg-accent dark:bg-accent-dark";
 };
 
-// --- NOVO: abas de filtro por status ---
+// --- Abas de filtro por status ---
 const FILTERS = [
   { key: "todas", label: "Todas" },
   { key: "andamento", label: "Em andamento" },
@@ -72,7 +76,7 @@ function GoalsPage() {
   const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
   const [contributingGoal, setContributingGoal] = useState(null);
 
-  // --- NOVO: filtro por status ---
+  // --- Filtro por status ---
   const [filterStatus, setFilterStatus] = useState("todas");
 
   const fetchGoals = useCallback(async () => {
@@ -191,7 +195,7 @@ function GoalsPage() {
       ? new Date(dateString).toLocaleDateString("pt-BR", { timeZone: "UTC" })
       : "Sem prazo";
 
-  // --- NOVO: resumo geral (calculado a partir dos dados já carregados) ---
+  // --- Resumo geral (calculado a partir dos dados já carregados) ---
   const summary = useMemo(() => {
     const totalAtual = goals.reduce(
       (sum, g) => sum + parseFloat(g.valor_atual || 0),
@@ -202,11 +206,12 @@ function GoalsPage() {
       0,
     );
     const concluidas = goals.filter((g) => g.status === "completed").length;
-    const progresso = totalObjetivo > 0 ? (totalAtual / totalObjetivo) * 100 : 0;
+    const progresso =
+      totalObjetivo > 0 ? (totalAtual / totalObjetivo) * 100 : 0;
     return { totalAtual, totalObjetivo, concluidas, progresso };
   }, [goals]);
 
-  // --- NOVO: metas filtradas pela aba selecionada ---
+  // ---Metas filtradas pela aba selecionada ---
   const filteredGoals = useMemo(() => {
     if (filterStatus === "concluidas") {
       return goals.filter((g) => g.status === "completed");
@@ -333,7 +338,9 @@ function GoalsPage() {
         title={`Aportes — ${aportesGoal?.titulo || ""}`}
       >
         {aportesLoading ? (
-          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">Carregando...</p>
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
+            Carregando...
+          </p>
         ) : aportesData.length === 0 ? (
           <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
             Nenhum aporte registrado ainda.
@@ -341,7 +348,10 @@ function GoalsPage() {
         ) : (
           <ul className="divide-y divide-rule dark:divide-rule-dark max-h-96 overflow-y-auto">
             {aportesData.map((a) => (
-              <li key={a.id} className="flex justify-between items-center py-2.5">
+              <li
+                key={a.id}
+                className="flex justify-between items-center py-2.5"
+              >
                 <span className="text-sm text-ink-soft dark:text-ink-soft-dark font-mono">
                   {formatDate(a.data)}
                 </span>
@@ -360,14 +370,18 @@ function GoalsPage() {
         </p>
       ) : filteredGoals.length === 0 ? (
         <p className="text-ink-soft dark:text-ink-soft-dark text-center py-10">
-          Nenhuma meta {filterStatus === "concluidas" ? "concluída" : "em andamento"} no momento.
+          Nenhuma meta{" "}
+          {filterStatus === "concluidas" ? "concluída" : "em andamento"} no
+          momento.
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredGoals.map((goal) => {
             const percentual =
               goal.valor_objetivo > 0
-                ? (parseFloat(goal.valor_atual) / parseFloat(goal.valor_objetivo)) * 100
+                ? (parseFloat(goal.valor_atual) /
+                    parseFloat(goal.valor_objetivo)) *
+                  100
                 : 0;
             const valorRestante = parseFloat(goal.valor_restante || 0);
             const aporteSugerido = parseFloat(goal.aporte_sugerido_mes || 0);
@@ -425,7 +439,9 @@ function GoalsPage() {
                         {formatCurrency(goal.valor_atual)} /{" "}
                         {formatCurrency(goal.valor_objetivo)}
                       </span>
-                      <span className="font-medium">{percentual.toFixed(1)}%</span>
+                      <span className="font-medium">
+                        {percentual.toFixed(1)}%
+                      </span>
                     </div>
                     <div className="w-full bg-rule dark:bg-rule-dark rounded-full h-1.5 overflow-hidden">
                       <div

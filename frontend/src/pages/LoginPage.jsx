@@ -10,7 +10,8 @@ const inputClasses =
   "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
   "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent transition-colors";
 
-const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
+const labelClasses =
+  "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
 
 function LoginPage() {
   const [email, setEmail] = useState("");

@@ -33,8 +33,6 @@ module.exports = {
         allowNull: false,
         defaultValue: 'fisico',
       },
-      // Auto-relacionamento: aponta para o cartão físico ao qual este cartão virtual pertence.
-      // Sempre NULL para cartões físicos.
       cartao_pai_id: {
         type: Sequelize.INTEGER,
         references: { model: 'cards', key: 'id' },
@@ -42,8 +40,6 @@ module.exports = {
         onDelete: 'CASCADE',
         allowNull: true,
       },
-      // Para cartões virtuais, estes três campos ficam NULL: o valor efetivo
-      // é sempre herdado do cartão físico pai (ver CardController).
       limite_total: {
         type: Sequelize.DECIMAL(10, 2),
         allowNull: true,

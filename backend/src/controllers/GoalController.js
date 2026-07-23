@@ -10,7 +10,6 @@ const sequelize = sequelizeInstance.connection;
 class GoalController {
 
     async store(req, res) {
-        // Validação
          const schema = Yup.object().shape({
             titulo: Yup.string().required('Título é obrigatório'),
             valor_objetivo: Yup.number().positive('Valor objetivo deve ser positivo').required(),
@@ -41,7 +40,7 @@ class GoalController {
         try {
             const goalsRaw = await Goal.findAll({
                  where: { userId: req.userId },
-                 order: [['prazo', 'ASC'], ['titulo', 'ASC']] // Opcional: Ordenar
+                 order: [['prazo', 'ASC'], ['titulo', 'ASC']]
             });
 
             const goalsWithCalculations = goalsRaw.map(goal => {
@@ -266,11 +265,11 @@ class GoalController {
     async destroy(req, res) {
          try {
             const { id } = req.params;
-            const goal = await Goal.findOne({ where: { id, userId: req.userId } }); // Usa userId
+            const goal = await Goal.findOne({ where: { id, userId: req.userId } });
             if (!goal) {
                 return res.status(404).json({ error: 'Meta não encontrada.' });
             }
-            await goal.destroy(); // Isso deve deletar as contribuições em cascata devido à FK
+            await goal.destroy();
             return res.status(204).send();
         } catch (error) {
             console.error("ERRO AO APAGAR META:", error);

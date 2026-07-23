@@ -53,15 +53,12 @@ function ProfilePage() {
     event.preventDefault();
     setSavingPerfil(true);
     try {
-      const response = await toast.promise(
-        api.put("/me", { nome, email }),
-        {
-          loading: "Salvando...",
-          success: "Perfil atualizado com sucesso!",
-          error: (err) =>
-            err.response?.data?.error || "Falha ao atualizar o perfil.",
-        },
-      );
+      const response = await toast.promise(api.put("/me", { nome, email }), {
+        loading: "Salvando...",
+        success: "Perfil atualizado com sucesso!",
+        error: (err) =>
+          err.response?.data?.error || "Falha ao atualizar o perfil.",
+      });
       updateUser(response.data);
     } catch (error) {
       console.error("Erro ao atualizar perfil:", error);
@@ -84,15 +81,12 @@ function ProfilePage() {
 
     setSavingSenha(true);
     try {
-      await toast.promise(
-        api.put("/me", { senhaAtual, novaSenha }),
-        {
-          loading: "Salvando...",
-          success: "Senha alterada com sucesso!",
-          error: (err) =>
-            err.response?.data?.error || "Falha ao alterar a senha.",
-        },
-      );
+      await toast.promise(api.put("/me", { senhaAtual, novaSenha }), {
+        loading: "Salvando...",
+        success: "Senha alterada com sucesso!",
+        error: (err) =>
+          err.response?.data?.error || "Falha ao alterar a senha.",
+      });
       setSenhaAtual("");
       setNovaSenha("");
       setConfirmacao("");

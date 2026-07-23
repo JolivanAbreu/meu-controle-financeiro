@@ -17,7 +17,6 @@ const inputClasses =
 
 const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
 
-// Botão de um seletor segmentado (usado para Tipo e Recorrência)
 function SegmentButton({ active, activeClasses, onClick, children }) {
   return (
     <button
@@ -73,7 +72,8 @@ function TransactionForm({ onSuccess, initialData }) {
 
   useEffect(() => {
     if (!dataLoading && initialData) {
-      const { tipo, valor, data, descricao, recurrence, subcategory, cardId } = initialData;
+      const { tipo, valor, data, descricao, recurrence, subcategory, cardId } =
+        initialData;
 
       setTipo(tipo);
       setValor(valor);
@@ -88,7 +88,7 @@ function TransactionForm({ onSuccess, initialData }) {
         setSelectedCategory(parentCategoryId);
 
         const relevantSubcategories = allSubcategories.filter(
-          (sc) => sc.categoryId === parentCategoryId
+          (sc) => sc.categoryId === parentCategoryId,
         );
         setFilteredSubcategories(relevantSubcategories);
 
@@ -115,7 +115,7 @@ function TransactionForm({ onSuccess, initialData }) {
 
     if (categoryId) {
       const filtered = allSubcategories.filter(
-        (sub) => sub.categoryId === parseInt(categoryId)
+        (sub) => sub.categoryId === parseInt(categoryId),
       );
       setFilteredSubcategories(filtered);
     } else {
@@ -160,7 +160,8 @@ function TransactionForm({ onSuccess, initialData }) {
       const response = await toast.promise(promise, {
         loading: "Salvando...",
         success: "Transação salva com sucesso!",
-        error: (err) => err.response?.data?.error || "Falha ao salvar a transação.",
+        error: (err) =>
+          err.response?.data?.error || "Falha ao salvar a transação.",
       });
       onSuccess(response.data);
     } catch (error) {
@@ -245,7 +246,9 @@ function TransactionForm({ onSuccess, initialData }) {
             className={inputClasses}
           >
             <option value="">
-              {selectedCategory ? "Selecione uma subcategoria" : "Escolha uma categoria"}
+              {selectedCategory
+                ? "Selecione uma subcategoria"
+                : "Escolha uma categoria"}
             </option>
             {filteredSubcategories.map((sub) => (
               <option key={sub.id} value={sub.id}>
@@ -255,7 +258,8 @@ function TransactionForm({ onSuccess, initialData }) {
           </select>
           {selectedCategory && filteredSubcategories.length === 0 && (
             <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1">
-              Nenhuma subcategoria. Adicione uma na página "Gerenciar Categorias".
+              Nenhuma subcategoria. Adicione uma na página "Gerenciar
+              Categorias".
             </p>
           )}
         </div>

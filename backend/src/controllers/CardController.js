@@ -297,7 +297,6 @@ class CardController {
         };
       }
 
-      // Remove chaves undefined para não sobrescrever campos não enviados
       Object.keys(updateData).forEach((key) => {
         if (updateData[key] === undefined) delete updateData[key];
       });
@@ -328,7 +327,6 @@ class CardController {
     }
   }
 
-  // Histórico de uso por ciclo de fatura 
   async history(req, res) {
     try {
       const { id } = req.params;
@@ -393,8 +391,7 @@ class CardController {
       return res.status(500).json({ error: 'Falha ao buscar histórico.', details: error.message });
     }
   }
-
-  // Listagem de transações da fatura mês/ano específicos 
+ 
   async transacoes(req, res) {
     try {
       const { id } = req.params;

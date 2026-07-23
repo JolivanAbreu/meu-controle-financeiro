@@ -13,7 +13,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      // Chave estrangeira para a categoria principal
       category_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -21,7 +20,6 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      // Chave estrangeira para o usuário (dono da subcategoria)
       user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,

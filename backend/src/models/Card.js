@@ -47,7 +47,6 @@ class Card extends Model {
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
 
-    // Auto-relacionamento: um cartão virtual pertence a um cartão físico.
     this.belongsTo(models.Card, { foreignKey: 'cartaoPaiId', as: 'cartaoPai' });
     this.hasMany(models.Card, { foreignKey: 'cartaoPaiId', as: 'cartoesVirtuais' });
 

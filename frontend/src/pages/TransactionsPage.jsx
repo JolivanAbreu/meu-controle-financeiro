@@ -31,8 +31,6 @@ function TransactionsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
 
-  // Espera 400ms sem digitação antes de disparar a busca, evitando uma
-  // requisição a cada tecla pressionada.
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);

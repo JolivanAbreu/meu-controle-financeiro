@@ -1,8 +1,25 @@
-import React, { useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, Sector } from 'recharts';
+import React, { useState } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Sector,
+} from "recharts";
 
 // Cores predefinidas (adicione mais se tiver muitas categorias)
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF19AF', '#8884D8', '#82CA9D'];
+const COLORS = [
+  "#0088FE",
+  "#00C49F",
+  "#FFBB28",
+  "#FF8042",
+  "#AF19FF",
+  "#FF19AF",
+  "#8884D8",
+  "#82CA9D",
+];
 
 // Função para processar os dados das despesas por categoria principal
 const processCategoryData = (transactions) => {
@@ -11,7 +28,7 @@ const processCategoryData = (transactions) => {
   }
 
   const categoryTotals = transactions
-    .filter(t => t.tipo === 'despesa' && t.subcategory?.category) // Filtra despesas com categoria válida
+    .filter((t) => t.tipo === "despesa" && t.subcategory?.category)
     .reduce((acc, t) => {
       const categoryName = t.subcategory.category.name;
       const value = parseFloat(t.valor);
@@ -23,16 +40,26 @@ const processCategoryData = (transactions) => {
       return acc;
     }, {});
 
-  // Converte para o formato { name: 'Categoria', value: 123.45 }
   return Object.entries(categoryTotals)
     .map(([name, value]) => ({ name, value }))
-    .sort((a, b) => b.value - a.value); // Ordena do maior para o menor
+    .sort((a, b) => b.value - a.value);
 };
 
-// Componente para renderizar um setor ativo (opcional, para efeito visual)
 const renderActiveShape = (props) => {
   const RADIAN = Math.PI / 180;
-  const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  const {
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    startAngle,
+    endAngle,
+    fill,
+    payload,
+    percent,
+    value,
+  } = props;
   const sin = Math.sin(-RADIAN * midAngle);
   const cos = Math.cos(-RADIAN * midAngle);
   const sx = cx + (outerRadius + 10) * cos;
@@ -41,29 +68,55 @@ const renderActiveShape = (props) => {
   const my = cy + (outerRadius + 30) * sin;
   const ex = mx + (cos >= 0 ? 1 : -1) * 22;
   const ey = my;
-  const textAnchor = cos >= 0 ? 'start' : 'end';
+  const textAnchor = cos >= 0 ? "start" : "end";
 
   return (
     <g>
-      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>{payload.name}</text>
+      <text x={cx} y={cy} dy={8} textAnchor="middle" fill={fill}>
+        {payload.name}
+      </text>
       <Sector
-        cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius}
-        startAngle={startAngle} endAngle={endAngle} fill={fill}
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
       />
       <Sector
-        cx={cx} cy={cy} startAngle={startAngle} endAngle={endAngle}
-        innerRadius={outerRadius + 6} outerRadius={outerRadius + 10} fill={fill}
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 6}
+        outerRadius={outerRadius + 10}
+        fill={fill}
       />
-      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none"/>
-      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none"/>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333">{`R$ ${value.toFixed(2)}`}</text>
-      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill="#999">
+      <path
+        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+        stroke={fill}
+        fill="none"
+      />
+      <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+      <text
+        x={ex + (cos >= 0 ? 1 : -1) * 12}
+        y={ey}
+        textAnchor={textAnchor}
+        fill="#333"
+      >{`R$ ${value.toFixed(2)}`}</text>
+      <text
+        x={ex + (cos >= 0 ? 1 : -1) * 12}
+        y={ey}
+        dy={18}
+        textAnchor={textAnchor}
+        fill="#999"
+      >
         {`( ${(percent * 100).toFixed(2)}%)`}
       </text>
     </g>
   );
 };
-
 
 function ExpenseCategoryPieChart({ transactions }) {
   const data = processCategoryData(transactions);
@@ -73,14 +126,19 @@ function ExpenseCategoryPieChart({ transactions }) {
     setActiveIndex(index);
   };
 
-   if (data.length === 0) {
-      return <p className="text-center text-gray-500">Nenhuma despesa registrada para exibir no gráfico.</p>;
+  if (data.length === 0) {
+    return (
+      <p className="text-center text-gray-500">
+        Nenhuma despesa registrada para exibir no gráfico.
+      </p>
+    );
   }
 
-
   return (
-    <div style={{ width: '100%', height: 350 }}>
-      <h3 className="text-lg font-semibold mb-2 text-center">Despesas por Categoria</h3>
+    <div style={{ width: "100%", height: 350 }}>
+      <h3 className="text-lg font-semibold mb-2 text-center">
+        Despesas por Categoria
+      </h3>
       <ResponsiveContainer>
         <PieChart>
           <Pie
@@ -92,15 +150,18 @@ function ExpenseCategoryPieChart({ transactions }) {
             innerRadius={60}
             outerRadius={90}
             fill="#8884d8"
-            dataKey="value" 
+            dataKey="value"
             onMouseEnter={onPieEnter}
             paddingAngle={2}
           >
             {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
             ))}
           </Pie>
-           <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
+          <Tooltip formatter={(value) => `R$ ${value.toFixed(2)}`} />
           {/* <Legend layout="vertical" verticalAlign="middle" align="right" /> */}
         </PieChart>
       </ResponsiveContainer>

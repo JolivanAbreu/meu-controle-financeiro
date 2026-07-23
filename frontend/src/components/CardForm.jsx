@@ -32,10 +32,6 @@ function SegmentButton({ active, onClick, children }) {
   );
 }
 
-// Calcula o dia de fechamento a partir do dia de vencimento e do intervalo entre
-// eles (ex: vencimento dia 17, fechamento 7 dias antes = dia 10). Como o sistema
-// guarda só o "dia do mês" (não uma data específica), o resultado é aproximado
-// para meses mais curtos — é a mesma simplificação já usada no restante do ciclo.
 function calcularDiaFechamento(diaVencimento, diasAntes) {
   const vencimento = Number(diaVencimento);
   const antes = Number(diasAntes);
@@ -46,8 +42,6 @@ function calcularDiaFechamento(diaVencimento, diasAntes) {
   return dia;
 }
 
-// cartoesFisicos: lista de cartões físicos ativos do usuário, para o select de vínculo.
-// defaultTipo/defaultCartaoPaiId: usados no atalho "+ Cartão virtual" a partir de um físico específico.
 function CardForm({ onSuccess, initialData, cartoesFisicos, defaultTipo, defaultCartaoPaiId }) {
   const [tipo, setTipo] = useState(defaultTipo || "fisico");
   const [nome, setNome] = useState("");

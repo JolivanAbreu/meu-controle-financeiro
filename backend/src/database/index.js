@@ -13,7 +13,6 @@ const Category = require('../models/Category');
 const Subcategory = require('../models/Subcategory');
 const Card = require('../models/Card');
 
-// Determina o ambiente e carrega a configuração correta
 const env = process.env.NODE_ENV || 'development';
 const dbConfig = dbConfigObject[env];
 const models = [
@@ -29,17 +28,15 @@ const models = [
 
 class Database {
   constructor() {
-    // Adiciona verificação básica da configuração
     if (!dbConfig || !dbConfig.database || !dbConfig.username || !dbConfig.host) {
         console.error("ERRO FATAL: Configuração do banco de dados incompleta ou inválida para o ambiente:", env);
-        process.exit(1); // Encerra a aplicação se a config estiver errada
+        process.exit(1);
     }
     this.connection = new Sequelize(dbConfig);
     this.init();
   }
 
   init() {
-    // 1. Inicializa todos os models
     models.forEach((model) => {
         if (model && typeof model.init === 'function') {
             model.init(this.connection);
@@ -49,7 +46,6 @@ class Database {
         }
     });
 
-    // 2. Chama o método associate DEPOIS que TODOS os models foram inicializados
     models.forEach((model) => {
          if (model && typeof model.associate === 'function') {
             model.associate(this.connection.models);

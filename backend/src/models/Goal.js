@@ -10,20 +10,10 @@ class Goal extends Model {
                 valor_objetivo: DataTypes.DECIMAL(10, 2),
                 valor_atual: {
                     type: DataTypes.DECIMAL(10, 2),
-                    defaultValue: 0.00 // Define 0 como padrão
+                    defaultValue: 0.00
                 },
                 prazo: DataTypes.DATEONLY,
-                // --- ADIÇÃO (Upgrade 2 - Preparação): Coluna account_id ---
-                 // Descomente quando o model 'Account' existir
-                 /*
-                 accountId: {
-                    type: DataTypes.INTEGER,
-                    field: 'account_id',
-                    allowNull: true, // Permite metas sem conta vinculada
-                 },
-                 */
-                // --------------------------------------------------------
-                userId: { // Garante que userId esteja mapeado
+                userId: {
                     type: DataTypes.INTEGER,
                     field: 'user_id',
                 }
@@ -39,11 +29,6 @@ class Goal extends Model {
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
         this.hasMany(models.GoalContribution, { foreignKey: 'goalId', as: 'contributions' });
-        // --- ADIÇÃO (Upgrade 2 - Preparação): Associação com Conta ---
-        /*
-        this.belongsTo(models.Account, { foreignKey: 'accountId', as: 'account' });
-        */
-        // -------------------------------------------------------------
     }
 }
 

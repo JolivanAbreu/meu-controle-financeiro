@@ -4,8 +4,7 @@ const formatCurrency = (value) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
     value || 0,
   );
-
-// Usadas só como SUGESTÃO de cor no CardForm quando a bandeira é reconhecida.
+  
 export const BRAND_GRADIENTS = {
   visa: "#0c1f73",
   mastercard: "#2c3e50",
@@ -18,18 +17,11 @@ export const BRAND_GRADIENTS = {
   diners: "#242424",
 };
 
-// Textura geométrica diagonal (inspirada no padrão de segurança de cartões
-// reais), construída só com camadas de gradiente CSS — sem imagem externa.
 function getTexture(cor) {
   const base = cor || "#2E4A5C";
   return { background: `linear-gradient(135deg, ${base} 0%, #12181F 100%)` };
 }
 
-// Visual inspirado num cartão físico real (textura geométrica, chip, número
-// mascarado), mas sem número de cartão de verdade: o sistema nunca coleta
-// esse dado, só informações administrativas (nome, banco, limite, datas).
-// Os botões de ação (histórico/editar/excluir) ficam embutidos no próprio
-// cartão, visíveis apenas quando ele está na frente da pilha (isFront).
 function CardVisual({
   nome,
   banco,

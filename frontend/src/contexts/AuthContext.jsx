@@ -42,7 +42,6 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // --- NOVO: atualiza os dados do usuário logado (usado após editar o perfil) ---
   function updateUser(updatedUser) {
     const merged = { ...user, ...updatedUser };
     localStorage.setItem("@MeuControleFinanceiro:user", JSON.stringify(merged));

@@ -15,12 +15,32 @@ const TONE_DOT = {
 
 function diasAteVencimento(diaVencimento) {
   const hoje = new Date();
-  const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
-  const lastDayThisMonth = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate();
-  let venc = new Date(hoje.getFullYear(), hoje.getMonth(), Math.min(diaVencimento, lastDayThisMonth));
+  const hojeSemHora = new Date(
+    hoje.getFullYear(),
+    hoje.getMonth(),
+    hoje.getDate(),
+  );
+  const lastDayThisMonth = new Date(
+    hoje.getFullYear(),
+    hoje.getMonth() + 1,
+    0,
+  ).getDate();
+  let venc = new Date(
+    hoje.getFullYear(),
+    hoje.getMonth(),
+    Math.min(diaVencimento, lastDayThisMonth),
+  );
   if (venc < hojeSemHora) {
-    const lastDayNextMonth = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0).getDate();
-    venc = new Date(hoje.getFullYear(), hoje.getMonth() + 1, Math.min(diaVencimento, lastDayNextMonth));
+    const lastDayNextMonth = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth() + 2,
+      0,
+    ).getDate();
+    venc = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth() + 1,
+      Math.min(diaVencimento, lastDayNextMonth),
+    );
   }
   return Math.round((venc - hojeSemHora) / (1000 * 60 * 60 * 24));
 }

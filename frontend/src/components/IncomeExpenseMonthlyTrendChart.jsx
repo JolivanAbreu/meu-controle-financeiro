@@ -27,17 +27,32 @@ function IncomeExpenseMonthlyTrendChart({ data }) {
   return (
     <div style={{ width: "100%", height: 220 }}>
       <ResponsiveContainer>
-        <LineChart data={data} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#C9CFC5" vertical={false} />
+        <LineChart
+          data={data}
+          margin={{ top: 5, right: 10, left: 0, bottom: 5 }}
+        >
+          <CartesianGrid
+            strokeDasharray="3 3"
+            stroke="#C9CFC5"
+            vertical={false}
+          />
           <XAxis
             dataKey="label"
-            tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "#4B5B59" }}
+            tick={{
+              fontFamily: "IBM Plex Mono",
+              fontSize: 11,
+              fill: "#4B5B59",
+            }}
             axisLine={{ stroke: "#C9CFC5" }}
             tickLine={false}
           />
           <YAxis
             tickFormatter={(v) => `R$ ${Math.round(v / 1000)}k`}
-            tick={{ fontFamily: "IBM Plex Mono", fontSize: 11, fill: "#4B5B59" }}
+            tick={{
+              fontFamily: "IBM Plex Mono",
+              fontSize: 11,
+              fill: "#4B5B59",
+            }}
             width={54}
             axisLine={false}
             tickLine={false}
@@ -52,7 +67,9 @@ function IncomeExpenseMonthlyTrendChart({ data }) {
             }}
           />
           <Legend
-            formatter={(value) => (value === "receitas" ? "Receitas" : "Despesas")}
+            formatter={(value) =>
+              value === "receitas" ? "Receitas" : "Despesas"
+            }
             wrapperStyle={{
               fontFamily: "IBM Plex Sans, sans-serif",
               fontSize: 12.5,

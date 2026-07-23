@@ -9,8 +9,8 @@ module.exports = {
       defaultValue: 'variável',
     });
     await queryInterface.addColumn('transactions', 'recurrence_group_id', {
-      type: Sequelize.STRING, // Ou UUID, se preferir
-      allowNull: true, // É nulo se recurrence = 'variável'
+      type: Sequelize.STRING,
+      allowNull: true,
     });
   },
 

@@ -10,10 +10,6 @@ module.exports = {
       onDelete: 'SET NULL',
     });
 
-    // Preenche category_id para os orçamentos já existentes, casando pelo
-    // nome salvo em `categoria` (best-effort — nomes com erro de digitação
-    // ou grafia diferente ficam com category_id nulo e precisam ser
-    // corrigidos manualmente editando o orçamento na tela).
     await queryInterface.sequelize.query(`
       UPDATE budgets
       SET category_id = (

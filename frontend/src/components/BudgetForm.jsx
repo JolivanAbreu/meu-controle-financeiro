@@ -30,8 +30,6 @@ const inputClasses =
 
 const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
 
-// NOVO: recebe defaultMes/defaultAno da página (mês/ano que o usuário está filtrando),
-// usados apenas ao criar um orçamento novo (initialData ausente).
 function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
   const [categoryId, setCategoryId] = useState("");
   const [categories, setCategories] = useState([]);

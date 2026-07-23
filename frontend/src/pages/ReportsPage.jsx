@@ -26,7 +26,7 @@ const formatDate = (dateString) => new Date(dateString).toLocaleDateString("pt-B
 
 const toISODate = (date) => date.toISOString().split("T")[0];
 
-// --- NOVO: atalhos de período ---
+// --- Atalhos de período ---
 const DATE_PRESETS = [
   { key: "mesAtual", label: "Este mês" },
   { key: "mesPassado", label: "Mês passado" },
@@ -44,7 +44,7 @@ const inputClasses =
 
 const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
 
-// --- NOVO: estilos do react-select adaptados ao tema (claro/escuro) ---
+// --- Estilos do react-select adaptados ao tema (claro/escuro) ---
 const getSelectStyles = (isDark) => {
   const colors = isDark
     ? {
@@ -118,7 +118,7 @@ function ReportsPage() {
   const [reportTransactions, setReportTransactions] = useState([]);
   const [showResults, setShowResults] = useState(false);
 
-  // --- NOVO: detecta o tema atual (claro/escuro) para estilizar o react-select ---
+  // --- Detecta o tema atual (claro/escuro) para estilizar o react-select ---
   const [isDark, setIsDark] = useState(
     () => document.documentElement.classList.contains("dark"),
   );
@@ -170,7 +170,7 @@ function ReportsPage() {
   const handleSelectAllSubcategories = () => { setSelectedSubcategories(availableSubcategories); };
   const handleClearAllSubcategories = () => { setSelectedSubcategories([]); };
 
-  // --- NOVO: aplica um atalho de período ---
+  // --- Aplica um atalho de período ---
   const applyDatePreset = (key) => {
     const now = new Date();
     let start;
@@ -201,7 +201,7 @@ function ReportsPage() {
     setEndDate(toISODate(end));
   };
 
-  // --- Handler para VISUALIZAR Relatório (ATUALIZADO PARA ENVIAR FILTROS) ---
+  // --- Handler para VISUALIZAR Relatório ---
   const handleViewReport = async () => {
     setLoading(true);
     setShowResults(false);
@@ -222,7 +222,7 @@ function ReportsPage() {
        params.keywords = keywords.trim();
     }
 
-    console.log("Enviando params para GET /transactions:", params); // Log para depuração
+    console.log("Enviando params para GET /transactions:", params); 
 
     // Chama a API GET /transactions com os parâmetros
     const promise = api.get("/transactions", { params });
@@ -234,9 +234,9 @@ function ReportsPage() {
         error: (err) => err.response?.data?.error || "Falha ao buscar dados.",
       });
       const response = await promise;
-      console.log("Resposta de GET /transactions:", response.data); // Log para depuração
+      console.log("Resposta de GET /transactions:", response.data);
       setReportTransactions(response.data);
-      setShowResults(true); // Mostra resultados mesmo que vazios
+      setShowResults(true); 
       if (response.data.length === 0) {
          toast("Nenhuma transação encontrada para os filtros aplicados.", { icon: 'ℹ️' });
       }
@@ -247,7 +247,7 @@ function ReportsPage() {
     }
   };
 
-  // Handler para GERAR PDF / ENVIAR E-MAIL (Sem alterações, usa reportService)
+  // Handler para GERAR PDF / ENVIAR E-MAIL
   const handleGenerateAction = async () => {
     if (selectedCategories.length === 0 && !(isOutrosSelected && keywords.trim() !== '')) { // Ajuste na validação
         toast.error("Selecione ao menos uma categoria (ou 'Outros' com palavra-chave) para Gerar PDF / Enviar E-mail.");
@@ -260,7 +260,7 @@ function ReportsPage() {
     } catch (error) { console.error("Caught error during report generation/sending:", error); } finally { setLoading(false); }
   };
 
-  // --- NOVO: exporta os resultados visualizados como CSV (client-side, sem nova chamada à API) ---
+  // --- Exporta os resultados visualizados como CSV ---
   const handleExportCSV = () => {
     if (reportTransactions.length === 0) return;
 

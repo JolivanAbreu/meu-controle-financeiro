@@ -7,7 +7,6 @@ class GoalContribution extends Model {
             {
                 valor: DataTypes.DECIMAL(10, 2),
                 data: DataTypes.DATEONLY,
-                // Mapeamento das chaves estrangeiras
                 goalId: {
                     type: DataTypes.INTEGER,
                     field: 'goal_id',
@@ -19,7 +18,7 @@ class GoalContribution extends Model {
             },
             {
                 sequelize,
-                tableName: 'goal_contributions', // Nome da tabela
+                tableName: 'goal_contributions',
             }
         );
         return this;
