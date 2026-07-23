@@ -6,6 +6,15 @@ export const getCategories = () => {
   return api.get('/categories');
 };
 
+/**
+ * Atualiza a cor de uma categoria (usada nos gráficos).
+ * @param {number} id
+ * @param {object} data - { cor: '#3E6B52' }
+ */
+export const updateCategory = (id, data) => {
+  return api.put(`/categories/${id}`, data);
+};
+
 export const getSubcategories = () => {
   return api.get('/subcategories');
 };

@@ -97,6 +97,15 @@ function LoginPage() {
           </button>
         </form>
 
+        <p className="text-sm text-center">
+          <Link
+            to="/forgot-password"
+            className="font-medium text-accent dark:text-accent-dark hover:underline"
+          >
+            Esqueceu sua senha?
+          </Link>
+        </p>
+
         <p className="text-sm text-center text-ink-soft dark:text-ink-soft-dark">
           Não tem uma conta?{" "}
           <Link

@@ -6,7 +6,14 @@ class Budget extends Model {
     static init(sequelize) {
         super.init(
             {
+                // Mantido por compatibilidade (exibição) — passa a ser preenchido
+                // automaticamente a partir de category.name, nunca mais digitado
+                // livremente pelo usuário.
                 categoria: DataTypes.STRING,
+                categoryId: {
+                    type: DataTypes.INTEGER,
+                    field: 'category_id',
+                },
                 limite: DataTypes.DECIMAL(10, 2),
                 mes: DataTypes.INTEGER,
                 ano: DataTypes.INTEGER,
@@ -21,6 +28,7 @@ class Budget extends Model {
 
     static associate(models) {
         this.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+        this.belongsTo(models.Category, { foreignKey: 'categoryId', as: 'category' });
     }
 }
 

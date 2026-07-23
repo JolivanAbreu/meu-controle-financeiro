@@ -1,13 +1,8 @@
 // backend/src/controllers/CardController.js
 
-const { Op } = require('sequelize');
+const { Op, fn, col } = require('sequelize');
 const Card = require('../models/Card');
 const Transaction = require('../models/Transaction');
-
-// --- Helpers de ciclo de fatura (fechamento/vencimento) ---
-// Testados isoladamente para os seguintes casos-limite:
-// fechamento em dia inexistente no mês (ex: 31 em fevereiro), virada de ano
-// (dezembro -> janeiro) e anos bissextos.
 
 function safeDate(year, monthIndex, day) {
   const lastDayOfMonth = new Date(year, monthIndex + 1, 0).getDate();
@@ -20,8 +15,6 @@ function addDays(date, days) {
   return result;
 }
 
-// Retorna o intervalo [cycleStart, cycleEnd] do ciclo de fatura ainda aberto
-// (o que vai fechar na próxima data de fechamento, hoje ou no futuro).
 function getCurrentCycle(diaFechamento, now = new Date()) {
   const closingThisMonth = safeDate(now.getFullYear(), now.getMonth(), diaFechamento);
   let cycleEndDate;
@@ -47,7 +40,6 @@ function getCurrentCycle(diaFechamento, now = new Date()) {
   return { cycleStart, cycleEnd };
 }
 
-// Retorna o ciclo cujo fechamento cai no mês/ano informado (usado para montar histórico).
 function getCycleForClosingMonth(diaFechamento, year, monthIndex) {
   const closing = safeDate(year, monthIndex, diaFechamento);
   const prevMonthRef = new Date(year, monthIndex - 1, 1);
@@ -57,8 +49,6 @@ function getCycleForClosingMonth(diaFechamento, year, monthIndex) {
   return { cycleStart, cycleEnd };
 }
 
-// Retorna os últimos `count` ciclos de fatura (o mais recente é o ciclo aberto atual),
-// em ordem cronológica crescente.
 function getPastCycles(diaFechamento, count, now = new Date()) {
   const current = getCurrentCycle(diaFechamento, now);
   const cycles = [current];
@@ -163,88 +153,91 @@ class CardController {
       const mesRef = mes ? parseInt(mes, 10) : null;
       const anoRef = ano ? parseInt(ano, 10) : null;
 
-      const cardsComStats = await Promise.all(
-        cards.map(async (card) => {
-          const isFisico = card.tipo === 'fisico';
-          const cartaoBase = isFisico ? card : cardsById.get(card.cartaoPaiId);
-
-          const limiteTotal = cartaoBase ? parseFloat(cartaoBase.limiteTotal || 0) : 0;
-          const diaFechamento = cartaoBase ? cartaoBase.diaFechamento : null;
-
-          let limiteUtilizado = 0;
-          let proximaFatura = 0;
-          let totalGasto = 0;
-          let faturaAberta = true;
-
-          if (diaFechamento) {
-            // Com mes/ano informados: fatura daquele mês específico.
-            // Sem eles: ciclo em aberto hoje (comportamento padrão).
-            const { cycleStart, cycleEnd } = mesRef && anoRef
-              ? getCycleForClosingMonth(diaFechamento, anoRef, mesRef - 1)
-              : getCurrentCycle(diaFechamento);
-
-            faturaAberta = new Date() <= cycleEnd;
-
-            // IDs considerados para o total "compartilhado" do ciclo: o próprio
-            // cartão base (físico) + todos os seus virtuais, quando `card` for físico.
-            const idsDoGrupo = isFisico
-              ? [card.id, ...cards.filter((c) => c.cartaoPaiId === card.id).map((c) => c.id)]
-              : [card.id];
-
-            limiteUtilizado = await Transaction.sum('valor', {
-              where: {
-                userId,
-                tipo: 'despesa',
-                cardId: { [Op.in]: idsDoGrupo },
-                data: {
-                  [Op.between]: [
-                    cycleStart.toISOString().split('T')[0],
-                    cycleEnd.toISOString().split('T')[0],
-                  ],
-                },
-              },
-            }) || 0;
-
-            // Fatura "própria" deste cartão específico dentro do ciclo (subconjunto
-            // do valor acima quando for um cartão virtual).
-            proximaFatura = await Transaction.sum('valor', {
-              where: {
-                userId,
-                tipo: 'despesa',
-                cardId: card.id,
-                data: {
-                  [Op.between]: [
-                    cycleStart.toISOString().split('T')[0],
-                    cycleEnd.toISOString().split('T')[0],
-                  ],
-                },
-              },
-            }) || 0;
-          }
-
-          totalGasto = await Transaction.sum('valor', {
-            where: { userId, tipo: 'despesa', cardId: card.id },
-          }) || 0;
-
-          const result = {
-            ...card.toJSON(),
-            limiteTotal,
-            limiteUtilizado,
-            limiteDisponivel: limiteTotal - limiteUtilizado,
-            proximaFatura,
-            totalGasto,
-            faturaAberta,
-          };
-
-          if (isFisico) {
-            result.cartoesVirtuais = cards
-              .filter((c) => c.cartaoPaiId === card.id)
-              .map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo }));
-          }
-
-          return result;
-        })
+      const totalGastoRows = await Transaction.findAll({
+        attributes: ['cardId', [fn('SUM', col('valor')), 'total']],
+        where: { userId, tipo: 'despesa', cardId: { [Op.ne]: null } },
+        group: ['cardId'],
+        raw: true,
+      });
+      const totalGastoPorCartao = new Map(
+        totalGastoRows.map((r) => [r.cardId, parseFloat(r.total) || 0])
       );
+
+      const fisicos = cards.filter((c) => c.tipo === 'fisico');
+      const gastoPorCicloPorCartao = new Map();
+      const faturaAbertaPorFisico = new Map();
+
+      for (const fisico of fisicos) {
+        if (!fisico.diaFechamento) continue;
+
+        const { cycleStart, cycleEnd } = mesRef && anoRef
+          ? getCycleForClosingMonth(fisico.diaFechamento, anoRef, mesRef - 1)
+          : getCurrentCycle(fisico.diaFechamento);
+
+        faturaAbertaPorFisico.set(fisico.id, new Date() <= cycleEnd);
+
+        const idsDoGrupo = [
+          fisico.id,
+          ...cards.filter((c) => c.cartaoPaiId === fisico.id).map((c) => c.id),
+        ];
+
+        const rows = await Transaction.findAll({
+          attributes: ['cardId', [fn('SUM', col('valor')), 'total']],
+          where: {
+            userId,
+            tipo: 'despesa',
+            cardId: { [Op.in]: idsDoGrupo },
+            data: {
+              [Op.between]: [
+                cycleStart.toISOString().split('T')[0],
+                cycleEnd.toISOString().split('T')[0],
+              ],
+            },
+          },
+          group: ['cardId'],
+          raw: true,
+        });
+
+        rows.forEach((r) => gastoPorCicloPorCartao.set(r.cardId, parseFloat(r.total) || 0));
+      }
+
+      const cardsComStats = cards.map((card) => {
+        const isFisico = card.tipo === 'fisico';
+        const cartaoBase = isFisico ? card : cardsById.get(card.cartaoPaiId);
+        const limiteTotal = cartaoBase ? parseFloat(cartaoBase.limiteTotal || 0) : 0;
+
+        const idsDoGrupo = isFisico
+          ? [card.id, ...cards.filter((c) => c.cartaoPaiId === card.id).map((c) => c.id)]
+          : [card.id];
+
+        const limiteUtilizado = idsDoGrupo.reduce(
+          (sum, id) => sum + (gastoPorCicloPorCartao.get(id) || 0),
+          0
+        );
+        const proximaFatura = gastoPorCicloPorCartao.get(card.id) || 0;
+        const totalGasto = totalGastoPorCartao.get(card.id) || 0;
+        const faturaAberta = cartaoBase
+          ? faturaAbertaPorFisico.get(cartaoBase.id) ?? true
+          : true;
+
+        const result = {
+          ...card.toJSON(),
+          limiteTotal,
+          limiteUtilizado,
+          limiteDisponivel: limiteTotal - limiteUtilizado,
+          proximaFatura,
+          totalGasto,
+          faturaAberta,
+        };
+
+        if (isFisico) {
+          result.cartoesVirtuais = cards
+            .filter((c) => c.cartaoPaiId === card.id)
+            .map((c) => ({ id: c.id, nome: c.nome, ativo: c.ativo }));
+        }
+
+        return result;
+      });
 
       return res.json(cardsComStats);
     } catch (error) {
@@ -327,8 +320,6 @@ class CardController {
         return res.status(404).json({ error: 'Cartão não encontrado.' });
       }
 
-      // Apagar um cartão físico também apaga (em cascata) seus cartões virtuais
-      // vinculados — as transações não são apagadas, só perdem a referência ao cartão.
       await card.destroy();
       return res.status(204).send();
     } catch (error) {
@@ -337,8 +328,7 @@ class CardController {
     }
   }
 
-  // Histórico de uso por ciclo de fatura (não por mês-calendário): os últimos
-  // `meses` fechamentos, incluindo o ciclo em aberto no momento da consulta.
+  // Histórico de uso por ciclo de fatura 
   async history(req, res) {
     try {
       const { id } = req.params;
@@ -361,9 +351,9 @@ class CardController {
 
       const idsDoGrupo = isFisico
         ? [
-            card.id,
-            ...(await Card.findAll({ where: { cartaoPaiId: card.id, userId }, attributes: ['id'] })).map((c) => c.id),
-          ]
+          card.id,
+          ...(await Card.findAll({ where: { cartaoPaiId: card.id, userId }, attributes: ['id'] })).map((c) => c.id),
+        ]
         : [card.id];
 
       const cycles = getPastCycles(cartaoBase.diaFechamento, meses);
@@ -404,8 +394,7 @@ class CardController {
     }
   }
 
-  // Lista as transações da fatura de um mês/ano específico (ou do ciclo em
-  // aberto, se mes/ano não forem informados) — usada para marcar itens como pagos.
+  // Listagem de transações da fatura mês/ano específicos 
   async transacoes(req, res) {
     try {
       const { id } = req.params;
@@ -434,9 +423,9 @@ class CardController {
 
       const idsDoGrupo = isFisico
         ? [
-            card.id,
-            ...(await Card.findAll({ where: { cartaoPaiId: card.id, userId }, attributes: ['id'] })).map((c) => c.id),
-          ]
+          card.id,
+          ...(await Card.findAll({ where: { cartaoPaiId: card.id, userId }, attributes: ['id'] })).map((c) => c.id),
+        ]
         : [card.id];
 
       const transactions = await Transaction.findAll({

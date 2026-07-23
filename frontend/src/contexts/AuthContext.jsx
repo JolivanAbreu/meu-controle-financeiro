@@ -42,6 +42,13 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // --- NOVO: atualiza os dados do usuário logado (usado após editar o perfil) ---
+  function updateUser(updatedUser) {
+    const merged = { ...user, ...updatedUser };
+    localStorage.setItem("@MeuControleFinanceiro:user", JSON.stringify(merged));
+    setUser(merged);
+  }
+
   function logout() {
     localStorage.removeItem("@MeuControleFinanceiro:user");
     localStorage.removeItem("@MeuControleFinanceiro:token");
@@ -50,7 +57,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ signed: !!user, user, loading, login, logout }}
+      value={{ signed: !!user, user, loading, login, logout, updateUser }}
     >
       {children}
     </AuthContext.Provider>

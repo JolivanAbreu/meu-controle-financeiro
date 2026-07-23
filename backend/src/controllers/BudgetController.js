@@ -10,20 +10,31 @@ class BudgetController {
 
     async store(req, res) {
         try {
-            const { categoria, limite, mes, ano } = req.body;
+            const { categoryId, limite, mes, ano } = req.body;
             const user_id = req.userId;
 
-            const categoryExistsInTable = await Category.findOne({ where: { name: categoria } });
-            if (!categoryExistsInTable) {
-                return res.status(400).json({ error: `Categoria principal '${categoria}' não encontrada.` });
+            if (!categoryId) {
+                return res.status(400).json({ error: 'Selecione uma categoria.' });
             }
 
-            const budgetExists = await Budget.findOne({ where: { user_id, categoria, mes, ano } });
+            const category = await Category.findByPk(categoryId);
+            if (!category) {
+                return res.status(400).json({ error: 'Categoria não encontrada.' });
+            }
+
+            const budgetExists = await Budget.findOne({ where: { user_id, categoryId, mes, ano } });
             if (budgetExists) {
                 return res.status(400).json({ error: 'Orçamento já cadastrado para esta categoria e mês.' });
             }
 
-            const budget = await Budget.create({ user_id, categoria, limite, mes, ano });
+            const budget = await Budget.create({
+                user_id,
+                categoryId,
+                categoria: category.name,
+                limite,
+                mes,
+                ano,
+            });
             return res.status(201).json(budget);
         } catch (error) {
             console.error("ERRO AO CRIAR ORÇAMENTO:", error);
@@ -43,21 +54,18 @@ class BudgetController {
             }
 
             const budgets = await Budget.findAll({ where: whereCondition });
-            const allCategories = await Category.findAll();
-            const categoryMap = new Map(allCategories.map(cat => [cat.name, cat.id]));
 
             const budgetsComGastos = await Promise.all(
                 budgets.map(async (budget) => {
                     const inicioDoMes = new Date(budget.ano, budget.mes - 1, 1);
                     const fimDoMes = new Date(budget.ano, budget.mes, 0, 23, 59, 59, 999);
-                    const categoryId = categoryMap.get(budget.categoria);
                     let totalGasto = 0;
 
-                    if (categoryId) {
+                    if (budget.categoryId) {
                         const userSubcategories = await Subcategory.findAll({
                             where: {
                                 userId: userId,
-                                categoryId: categoryId,
+                                categoryId: budget.categoryId,
                             },
                             attributes: ['id'],
                         });
@@ -76,17 +84,15 @@ class BudgetController {
                                     },
                                 },
                             });
-                        } else {
-                            console.log(`Nenhuma subcategoria encontrada para Categoria ID ${categoryId}, Usuário ID ${userId}`);
                         }
                     } else {
-                        console.warn(`Categoria '${budget.categoria}' do orçamento ID ${budget.id} não encontrada na tabela 'categories'.`);
+                        console.warn(`Orçamento ID ${budget.id} sem categoryId definido — gasto não pôde ser calculado.`);
                     }
-
 
                     return {
                         ...budget.toJSON(),
                         gasto_atual: totalGasto || 0,
+                        categoriaValida: !!budget.categoryId,
                     };
                 })
             );
@@ -101,22 +107,26 @@ class BudgetController {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const userId = req.userId; 
-            const { categoria, limite, mes, ano } = req.body;
-            if (categoria) {
-                const categoryExistsInTable = await Category.findOne({ where: { name: categoria } });
-                if (!categoryExistsInTable) {
-                    return res.status(400).json({ error: `Categoria principal '${categoria}' não encontrada.` });
-                }
-            }
+            const userId = req.userId;
+            const { categoryId, limite, mes, ano } = req.body;
 
             const budget = await Budget.findOne({ where: { id, user_id: userId } });
-
             if (!budget) {
                 return res.status(404).json({ error: 'Orçamento não encontrado.' });
             }
 
-            const updatedBudget = await budget.update({ categoria, limite, mes, ano });
+            const updateData = { limite, mes, ano };
+
+            if (categoryId) {
+                const category = await Category.findByPk(categoryId);
+                if (!category) {
+                    return res.status(400).json({ error: 'Categoria não encontrada.' });
+                }
+                updateData.categoryId = categoryId;
+                updateData.categoria = category.name;
+            }
+
+            const updatedBudget = await budget.update(updateData);
             return res.json(updatedBudget);
         } catch (error) {
             console.error("ERRO AO ATUALIZAR ORÇAMENTO:", error);

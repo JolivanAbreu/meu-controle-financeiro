@@ -1,4 +1,4 @@
-// frontend/src/services/goalService.js (Exemplo)
+// frontend/src/services/goalService.js
 import api from './api';
 
 export const getGoals = () => {
@@ -6,13 +6,11 @@ export const getGoals = () => {
 };
 
 export const createGoal = (data) => {
-    // Garante que valor_atual não seja enviado
     const { valor_atual, ...payload } = data;
     return api.post('/goals', payload);
 };
 
 export const updateGoal = (id, data) => {
-     // Garante que valor_atual não seja enviado
     const { valor_atual, ...payload } = data;
     return api.put(`/goals/${id}`, payload);
 };
@@ -21,9 +19,10 @@ export const deleteGoal = (id) => {
     return api.delete(`/goals/${id}`);
 };
 
-// --- NOVA FUNÇÃO ---
 export const addGoalContribution = (goalId, data) => {
-    // data deve ser { valor: number, data: string 'YYYY-MM-DD' }
     return api.post(`/goals/${goalId}/contribute`, data);
 };
-// -----------------
+
+export const getGoalContributions = (goalId) => {
+    return api.get(`/goals/${goalId}/contributions`);
+};

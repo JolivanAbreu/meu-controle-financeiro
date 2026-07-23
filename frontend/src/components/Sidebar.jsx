@@ -1,7 +1,7 @@
 // frontend/src/components/Sidebar.jsx
 
 import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   FaTachometerAlt,
   FaPiggyBank,
@@ -15,11 +15,14 @@ import {
   FaMoon,
   FaSun,
   FaCreditCard,
+  FaExchangeAlt,
 } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
+import NotificationBell from "./NotificationBell";
 
 const NAV_ITEMS = [
   { to: "/dashboard", label: "Dashboard", icon: FaTachometerAlt },
+  { to: "/transactions", label: "Transações", icon: FaExchangeAlt },
   { to: "/budgets", label: "Orçamentos", icon: FaPiggyBank },
   { to: "/goals", label: "Metas", icon: FaBullseye },
   { to: "/cards", label: "Cartões", icon: FaCreditCard },
@@ -119,9 +122,7 @@ function Sidebar({ isOpen, onClose }) {
           <span className="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded border border-white/25 font-display text-sm text-paper-raised">
             MF
           </span>
-          <span
-            className={`font-display text-base text-paper-raised ${textFade}`}
-          >
+          <span className={`font-display text-base text-paper-raised ${textFade}`}>
             Meu Controle
           </span>
         </div>
@@ -129,9 +130,7 @@ function Sidebar({ isOpen, onClose }) {
         {/* Botão de trava (só no desktop) */}
         <button
           onClick={() => setLocked((v) => !v)}
-          aria-label={
-            locked ? "Destravar menu expandido" : "Travar menu expandido"
-          }
+          aria-label={locked ? "Destravar menu expandido" : "Travar menu expandido"}
           title={locked ? "Destravar menu" : "Travar menu expandido"}
           className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-accent text-paper-raised items-center justify-center shadow-card hover:bg-[#25394A] transition-colors"
         >
@@ -153,15 +152,23 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Perfil do usuário */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/10 overflow-hidden">
-        <span className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-sidebar-active text-paper-raised text-xs font-medium">
-          {initials}
-        </span>
-        <div className={`min-w-0 ${textFade}`}>
-          <h3 className="text-sm font-medium text-paper-raised truncate">
-            {user?.nome}
-          </h3>
-          <p className="text-xs text-sidebar-muted truncate">{user?.email}</p>
-        </div>
+        <Link
+          to="/profile"
+          onClick={onClose}
+          className="flex items-center gap-3 min-w-0 flex-1 hover:opacity-80 transition-opacity"
+          title="Meu perfil"
+        >
+          <span className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-sidebar-active text-paper-raised text-xs font-medium">
+            {initials}
+          </span>
+          <div className={`min-w-0 ${textFade}`}>
+            <h3 className="text-sm font-medium text-paper-raised truncate">
+              {user?.nome}
+            </h3>
+            <p className="text-xs text-sidebar-muted truncate">{user?.email}</p>
+          </div>
+        </Link>
+        <NotificationBell />
       </div>
 
       {/* Busca */}

@@ -332,6 +332,13 @@ function BudgetsPage() {
                     {formatCurrency(budget.gasto_atual - budget.limite)}
                   </p>
                 )}
+
+                {budget.categoriaValida === false && (
+                  <p className="text-despesa dark:text-despesa-dark text-xs mt-2">
+                    Categoria "{budget.categoria}" não foi reconhecida automaticamente.
+                    Edite este orçamento e selecione a categoria novamente.
+                  </p>
+                )}
               </div>
             );
           })}

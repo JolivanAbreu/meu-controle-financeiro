@@ -192,7 +192,7 @@ class ReportController {
                 const items = grouped[categoryName];
                 let categoryTotal = 0;
 
-                // Cabeçalho da categoria (linha ocupando as 4 colunas)
+                // Cabeçalho da categoria
                 tableBody.push([
                     {
                         text: categoryName,
@@ -250,7 +250,6 @@ class ReportController {
         const docDefinition = {
             pageMargins: [40, 85, 40, 60],
 
-            // Faixa escura no topo de cada página, com a marca do app
             header: () => ({
                 margin: [40, 20, 40, 0],
                 table: {
@@ -265,7 +264,6 @@ class ReportController {
                 layout: "noBorders",
             }),
 
-            // Data de geração + número de página em todas as páginas
             footer: (currentPage, pageCount) => ({
                 margin: [40, 10, 40, 0],
                 columns: [
@@ -279,7 +277,6 @@ class ReportController {
                 { text: `Período: ${format(parseISO(startDate), "P", { locale: ptBR })} a ${format(parseISO(endDate), "P", { locale: ptBR })}`, style: "subheader" },
                 { text: `Cliente: ${user.nome || user.email}`, style: "subheader", margin: [0, 0, 0, 15] },
 
-                // Resumo do período em 3 cartões coloridos
                 {
                     columns: [
                         {

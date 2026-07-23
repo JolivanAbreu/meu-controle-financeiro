@@ -9,28 +9,35 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#3E6B52",
-  "#6B8F7A",
-  "#A2432E",
-  "#C77B5F",
-  "#2E4A5C",
-  "#B8BFB3",
+  "#3E6B52", // receita / verde principal
+  "#6B8F7A", // verde-sálvia
+  "#A2432E", // despesa / terracota
+  "#C77B5F", // terracota claro
+  "#2E4A5C", // slate (accent)
+  "#B8BFB3", // cinza neutro
 ];
 
 const ExpensesChart = ({ transactions }) => {
-  // Agrupa despesas por categoria e calcula o total geral
+  // Agrupa despesas por categoria e calcula o total geral. Usa a cor
+  // cadastrada na categoria (tela de Categorias) quando existir; senão,
+  // cai na paleta fixa por posição, como antes.
   const { data, totalDespesas } = useMemo(() => {
     const categoriesMap = transactions
       .filter((t) => t.tipo === "despesa")
       .reduce((acc, t) => {
         const categoryName = t.subcategory?.category?.name || "Outros";
-        acc[categoryName] = (acc[categoryName] || 0) + parseFloat(t.valor);
+        const categoryColor = t.subcategory?.category?.cor || null;
+        if (!acc[categoryName]) {
+          acc[categoryName] = { value: 0, cor: categoryColor };
+        }
+        acc[categoryName].value += parseFloat(t.valor);
         return acc;
       }, {});
 
     const chartData = Object.keys(categoriesMap).map((name) => ({
       name,
-      value: categoriesMap[name],
+      value: categoriesMap[name].value,
+      cor: categoriesMap[name].cor,
     }));
 
     const total = chartData.reduce((sum, item) => sum + item.value, 0);
@@ -66,10 +73,10 @@ const ExpensesChart = ({ transactions }) => {
             dataKey="value"
             animationDuration={800}
           >
-            {data.map((_, index) => (
+            {data.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
-                fill={COLORS[index % COLORS.length]}
+                fill={entry.cor || COLORS[index % COLORS.length]}
                 stroke="none"
               />
             ))}

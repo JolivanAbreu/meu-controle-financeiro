@@ -5,9 +5,9 @@ import Modal from "../components/Modal";
 import ConfirmModal from "../components/ConfirmModal";
 import GoalForm from "../components/GoalForm";
 import ContributeModal from "../components/ContributeModal";
-import { FaEdit, FaTrash, FaPlusCircle } from "react-icons/fa";
+import { FaEdit, FaTrash, FaPlusCircle, FaHistory } from "react-icons/fa";
 import toast from "react-hot-toast";
-import { getGoals, deleteGoal } from "../services/goalService";
+import { getGoals, deleteGoal, getGoalContributions } from "../services/goalService";
 
 // Badge de Status (recolorido com os tokens do sistema)
 const STATUS_STYLES = {
@@ -128,6 +128,30 @@ function GoalsPage() {
   const handleContribute = (goal) => {
     setContributingGoal(goal);
     setIsContributeModalOpen(true);
+  };
+
+  const [aportesGoal, setAportesGoal] = useState(null);
+  const [aportesData, setAportesData] = useState([]);
+  const [aportesLoading, setAportesLoading] = useState(false);
+
+  const handleVerAportes = async (goal) => {
+    setAportesGoal(goal);
+    setAportesLoading(true);
+    setAportesData([]);
+    try {
+      const response = await getGoalContributions(goal.id);
+      setAportesData(response.data);
+    } catch (error) {
+      console.error("Falha ao buscar aportes:", error);
+      toast.error("Não foi possível carregar os aportes desta meta.");
+    } finally {
+      setAportesLoading(false);
+    }
+  };
+
+  const closeAportes = () => {
+    setAportesGoal(null);
+    setAportesData([]);
   };
 
   const [pendingDelete, setPendingDelete] = useState(null);
@@ -303,6 +327,33 @@ function GoalsPage() {
         onCancel={() => setPendingDelete(null)}
       />
 
+      <Modal
+        isOpen={!!aportesGoal}
+        onClose={closeAportes}
+        title={`Aportes — ${aportesGoal?.titulo || ""}`}
+      >
+        {aportesLoading ? (
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">Carregando...</p>
+        ) : aportesData.length === 0 ? (
+          <p className="text-sm text-ink-soft dark:text-ink-soft-dark">
+            Nenhum aporte registrado ainda.
+          </p>
+        ) : (
+          <ul className="divide-y divide-rule dark:divide-rule-dark max-h-96 overflow-y-auto">
+            {aportesData.map((a) => (
+              <li key={a.id} className="flex justify-between items-center py-2.5">
+                <span className="text-sm text-ink-soft dark:text-ink-soft-dark font-mono">
+                  {formatDate(a.data)}
+                </span>
+                <span className="font-mono text-sm font-medium text-receita dark:text-receita-dark">
+                  + {formatCurrency(a.valor)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Modal>
+
       {goals.length === 0 ? (
         <p className="text-ink-soft dark:text-ink-soft-dark text-center py-10">
           Nenhuma meta encontrada. Crie sua primeira meta!
@@ -341,6 +392,13 @@ function GoalsPage() {
                           <FaPlusCircle size={16} />
                         </button>
                       )}
+                      <button
+                        onClick={() => handleVerAportes(goal)}
+                        className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-accent dark:hover:text-accent-dark hover:bg-accent-soft dark:hover:bg-accent-soft-dark rounded-full transition-colors"
+                        title="Ver Aportes"
+                      >
+                        <FaHistory size={14} />
+                      </button>
                       <button
                         onClick={() => handleEdit(goal)}
                         className="p-2 text-ink-soft dark:text-ink-soft-dark hover:text-accent dark:hover:text-accent-dark hover:bg-accent-soft dark:hover:bg-accent-soft-dark rounded-full transition-colors"

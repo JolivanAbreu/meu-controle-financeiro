@@ -9,6 +9,7 @@ import {
   createSubcategory,
   updateSubcategory, // Importar nova função
   deleteSubcategory, // Importar nova função
+  updateCategory,
 } from '../services/categoryService';
 import Modal from '../components/Modal'; // Importar o Modal
 
@@ -23,7 +24,6 @@ const inputClasses =
 const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark mb-1";
 
 function CategoriesPage() {
-  // Estados existentes
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [newName, setNewName] = useState('');
@@ -32,17 +32,16 @@ function CategoriesPage() {
   const [formLoading, setFormLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // --- ESTADOS PARA MODAIS ---
+  // Estados dos modais
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState(null); // Guarda a subcat sendo editada
   const [deletingSubcategory, setDeletingSubcategory] = useState(null); // Guarda a subcat a ser deletada
 
-  // --- ESTADOS PARA O FORMULÁRIO DE EDIÇÃO ---
+  // Estados do formulário de edição
   const [editName, setEditName] = useState('');
   const [editCategoryId, setEditCategoryId] = useState('');
 
-  // --- FUNÇÃO loadData (sem alterações) ---
   const loadData = async () => {
      try {
        setLoading(true);
@@ -59,8 +58,24 @@ function CategoriesPage() {
    };
   useEffect(() => { loadData(); }, [selectedCatId]); // Removido selectedCatId das dependências para evitar recarregamento constante
 
-  // --- FUNÇÃO handleSubmit (criar - sem alterações) ---
-  const handleSubmit = async (e) => { /* ... seu código handleSubmit ... */
+  // --- NOVO: troca a cor de uma categoria (usada nos gráficos) ---
+  const handleCorChange = async (category, cor) => {
+    // Atualização otimista: reflete na tela antes da resposta do servidor.
+    setCategories((prev) =>
+      prev.map((c) => (c.id === category.id ? { ...c, cor } : c)),
+    );
+    try {
+      await updateCategory(category.id, { cor });
+    } catch (err) {
+      console.error("Erro ao atualizar cor da categoria:", err);
+      toast.error("Não foi possível salvar a cor.");
+      setCategories((prev) =>
+        prev.map((c) => (c.id === category.id ? { ...c, cor: category.cor } : c)),
+      );
+    }
+  };
+
+  const handleSubmit = async (e) => {
       e.preventDefault();
       if (!newName || !selectedCatId) { setError("Preencha todos os campos."); return; }
       setFormLoading(true); setError(null);
@@ -76,7 +91,7 @@ function CategoriesPage() {
       } finally { setFormLoading(false); }
   };
 
-  // --- FUNÇÕES HANDLER PARA EDITAR ---
+  // Handlers de edição
   const handleEditClick = (subcategory) => {
     setEditingSubcategory(subcategory); // Guarda a subcategoria completa
     setEditName(subcategory.name);     // Preenche o estado do nome para o form
@@ -123,7 +138,7 @@ function CategoriesPage() {
     setEditCategoryId('');
   };
 
-  // --- FUNÇÕES HANDLER PARA DELETAR ---
+  // Handlers de exclusão
   const handleDeleteClick = (subcategory) => {
     setDeletingSubcategory(subcategory); // Guarda a subcategoria a ser deletada
     setError(null); // Limpa erros
@@ -166,8 +181,6 @@ function CategoriesPage() {
     setIsDeleteModalOpen(false);
     setDeletingSubcategory(null);
   };
-  // --- FIM FUNÇÕES ---
-
 
   if (loading) {
     return (
@@ -251,9 +264,18 @@ function CategoriesPage() {
               key={cat.id}
               className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-5"
             >
-              <h3 className="font-display text-lg font-medium text-ink dark:text-ink-dark">
-                {cat.name}
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-display text-lg font-medium text-ink dark:text-ink-dark">
+                  {cat.name}
+                </h3>
+                <input
+                  type="color"
+                  value={cat.cor || "#2E4A5C"}
+                  onChange={(e) => handleCorChange(cat, e.target.value)}
+                  title="Cor usada nos gráficos"
+                  className="h-7 w-10 rounded-lg border border-rule dark:border-rule-dark bg-paper dark:bg-paper-dark cursor-pointer"
+                />
+              </div>
 
               {currentSubcategories.length > 0 ? (
                 <ul className="mt-2 divide-y divide-rule dark:divide-rule-dark">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import api from "../services/api";
 import toast from "react-hot-toast";
+import { getCategories } from "../services/categoryService";
 
 const meses = [
   { nome: "Janeiro", valor: 1 },
@@ -24,6 +25,7 @@ const inputClasses =
   "bg-paper dark:bg-paper-dark text-ink dark:text-ink-dark " +
   "placeholder:text-ink-soft dark:placeholder:text-ink-soft-dark " +
   "focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent " +
+  "disabled:bg-rule/40 dark:disabled:bg-rule-dark/40 disabled:text-ink-soft dark:disabled:text-ink-soft-dark " +
   "transition-colors";
 
 const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
@@ -31,18 +33,36 @@ const labelClasses = "block text-sm font-medium text-ink dark:text-ink-dark";
 // NOVO: recebe defaultMes/defaultAno da página (mês/ano que o usuário está filtrando),
 // usados apenas ao criar um orçamento novo (initialData ausente).
 function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
-  const [categoria, setCategoria] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [limite, setLimite] = useState("");
   const [mes, setMes] = useState(defaultMes || new Date().getMonth() + 1);
   const [ano, setAno] = useState(defaultAno || new Date().getFullYear());
 
   useEffect(() => {
+    async function loadCategories() {
+      try {
+        const response = await getCategories();
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Falha ao carregar categorias:", error);
+        toast.error("Não foi possível carregar as categorias.");
+      } finally {
+        setCategoriesLoading(false);
+      }
+    }
+    loadCategories();
+  }, []);
+
+  useEffect(() => {
     if (initialData) {
-      setCategoria(initialData.categoria);
+      setCategoryId(initialData.categoryId || "");
       setLimite(initialData.limite);
       setMes(initialData.mes);
       setAno(initialData.ano);
     } else {
+      setCategoryId("");
       setMes(defaultMes || new Date().getMonth() + 1);
       setAno(defaultAno || new Date().getFullYear());
     }
@@ -50,8 +70,14 @@ function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    if (!categoryId) {
+      toast.error("Selecione uma categoria.");
+      return;
+    }
+
     const budgetData = {
-      categoria,
+      categoryId: Number(categoryId),
       limite: Number(limite),
       mes: Number(mes),
       ano: Number(ano),
@@ -80,13 +106,22 @@ function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className={labelClasses}>Categoria</label>
-        <input
-          type="text"
+        <select
+          value={categoryId}
+          onChange={(e) => setCategoryId(e.target.value)}
+          disabled={categoriesLoading}
           required
-          value={categoria}
-          onChange={(e) => setCategoria(e.target.value)}
           className={inputClasses}
-        />
+        >
+          <option value="">
+            {categoriesLoading ? "Carregando..." : "Selecione uma categoria"}
+          </option>
+          {categories.map((cat) => (
+            <option key={cat.id} value={cat.id}>
+              {cat.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label className={labelClasses}>Limite (R$)</label>

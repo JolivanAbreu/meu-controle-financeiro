@@ -30,7 +30,7 @@ function RegisterPage() {
     try {
       const response = await api.post("/register", { nome, email, senha });
       setSuccess(
-        `Usuário ${response.data.nome} cadastrado com sucesso! Redirecionando...`,
+        `Cadastro realizado! Enviamos um link de confirmação para ${email}. Redirecionando...`,
       );
 
       setNome("");

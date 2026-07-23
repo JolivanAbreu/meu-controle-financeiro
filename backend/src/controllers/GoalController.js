@@ -9,14 +9,12 @@ const sequelize = sequelizeInstance.connection;
 
 class GoalController {
 
-    // --- STORE: Modificado para não receber valor_atual ---
     async store(req, res) {
         // Validação
          const schema = Yup.object().shape({
             titulo: Yup.string().required('Título é obrigatório'),
             valor_objetivo: Yup.number().positive('Valor objetivo deve ser positivo').required(),
             prazo: Yup.date().nullable().min(startOfDay(new Date()), 'Prazo não pode ser no passado'),
-            // accountId: Yup.number().integer().nullable() // Para Upgrade 2
         });
          try {
             await schema.validate(req.body, { abortEarly: false });
@@ -28,9 +26,7 @@ class GoalController {
                 valor_objetivo,
                 valor_atual: 0,
                 prazo: prazo || null,
-                // accountId: accountId || null, // Para Upgrade 2
             });
-            // Retorna o objeto simples para evitar problemas de serialização
             return res.status(201).json(goal.toJSON());
         } catch (error) {
              if (error instanceof Yup.ValidationError) {
@@ -41,7 +37,6 @@ class GoalController {
         }
     }
 
-    // --- INDEX: Modificado para incluir Cálculos (Upgrade 3) ---
     async index(req, res) {
         try {
             const goalsRaw = await Goal.findAll({
@@ -49,67 +44,58 @@ class GoalController {
                  order: [['prazo', 'ASC'], ['titulo', 'ASC']] // Opcional: Ordenar
             });
 
-            // Calcula os campos virtuais
             const goalsWithCalculations = goalsRaw.map(goal => {
                 const goalJSON = goal.toJSON();
 
-                // Cálculo 1: Valor Restante
                 goalJSON.valor_restante = Math.max(0, parseFloat(goalJSON.valor_objetivo) - parseFloat(goalJSON.valor_atual));
 
-                // Cálculo 2: Meses Restantes e Aporte Sugerido
                 goalJSON.meses_restantes = null;
                 goalJSON.aporte_sugerido_mes = null;
                 const hoje = startOfDay(new Date());
-                // Certifica que goalJSON.prazo é uma string válida antes de parsear
                 const prazoDate = goalJSON.prazo && typeof goalJSON.prazo === 'string' ? parseISO(goalJSON.prazo) : null;
 
                 if (prazoDate && isAfter(prazoDate, hoje)) {
-                    // Calcula a diferença em meses *calendários*
-                    goalJSON.meses_restantes = differenceInCalendarMonths(prazoDate, hoje) + 1; // +1 inclui o mês atual no cálculo
+                    goalJSON.meses_restantes = differenceInCalendarMonths(prazoDate, hoje) + 1;
                     if (goalJSON.meses_restantes > 0 && goalJSON.valor_restante > 0) {
                         goalJSON.aporte_sugerido_mes = (goalJSON.valor_restante / goalJSON.meses_restantes).toFixed(2);
                     } else {
-                        goalJSON.aporte_sugerido_mes = "0.00"; // Já atingido ou prazo inválido/curto
+                        goalJSON.aporte_sugerido_mes = "0.00";
                     }
                 } else if (prazoDate && !isAfter(prazoDate, hoje)) {
-                     goalJSON.meses_restantes = 0; // Prazo expirado
-                     goalJSON.aporte_sugerido_mes = goalJSON.valor_restante > 0 ? null : "0.00"; // Ou null se não atingido
+                     goalJSON.meses_restantes = 0;
+                     goalJSON.aporte_sugerido_mes = goalJSON.valor_restante > 0 ? null : "0.00";
                 }
 
 
-                // Cálculo 3: Status (Lógica de Exemplo)
                 if (parseFloat(goalJSON.valor_atual) >= parseFloat(goalJSON.valor_objetivo)) {
                     goalJSON.status = 'completed';
                 } else if (prazoDate && !isAfter(prazoDate, hoje)) {
-                    goalJSON.status = 'overdue'; // Prazo passou e não completou
+                    goalJSON.status = 'overdue';
                 } else if (goalJSON.meses_restantes !== null && goalJSON.meses_restantes > 0 && goalJSON.createdAt) {
-                    // Lógica melhorada: compara progresso percentual com tempo percentual decorrido
                     try {
-                        const inicioDate = parseISO(goalJSON.createdAt); // Data de criação da meta
-                        const totalMonthsDuration = differenceInCalendarMonths(prazoDate, inicioDate) + 1; // Duração total em meses
-                        const elapsedMonths = differenceInCalendarMonths(hoje, inicioDate); // Meses decorridos (não +1 aqui)
+                        const inicioDate = parseISO(goalJSON.createdAt);
+                        const totalMonthsDuration = differenceInCalendarMonths(prazoDate, inicioDate) + 1;
+                        const elapsedMonths = differenceInCalendarMonths(hoje, inicioDate);
 
                         if (totalMonthsDuration > 0 && elapsedMonths >= 0) {
                              const timePercentageElapsed = Math.max(0, Math.min(100, (elapsedMonths / totalMonthsDuration) * 100));
                              const valuePercentageAchieved = Math.max(0, Math.min(100, (parseFloat(goalJSON.valor_atual) / parseFloat(goalJSON.valor_objetivo)) * 100));
 
-                             // Considera 'on_track' se o progresso for >= ao tempo decorrido
-                             // Ou se já estiver muito perto de completar
                              if (valuePercentageAchieved >= timePercentageElapsed || valuePercentageAchieved > 95) {
                                   goalJSON.status = 'on_track';
                              } else {
                                   goalJSON.status = 'behind';
                              }
                         } else {
-                             goalJSON.status = 'pending'; // Caso de prazo no mesmo mês da criação
+                             goalJSON.status = 'pending';
                         }
                     } catch(dateError) {
                          console.error("Erro ao calcular status da meta:", dateError, goalJSON);
-                         goalJSON.status = 'pending'; // Fallback em caso de erro de data
+                         goalJSON.status = 'pending';
                     }
 
                 } else {
-                    goalJSON.status = 'pending'; // Sem prazo definido ou prazo inválido
+                    goalJSON.status = 'pending';
                 }
 
                 return goalJSON;
@@ -123,9 +109,7 @@ class GoalController {
         }
     }
 
-    // --- UPDATE: Modificado para NÃO atualizar valor_atual ---
     async update(req, res) {
-        // Validação (apenas campos permitidos)
          const schema = Yup.object().shape({
             titulo: Yup.string().required('Título é obrigatório'),
             valor_objetivo: Yup.number().positive('Valor objetivo deve ser positivo').required(),
@@ -151,8 +135,7 @@ class GoalController {
 
             const updatedGoalRaw = await goal.update(updateData);
 
-             // Recalcula os campos virtuais após o update para retornar dados consistentes
-            const reloadedGoal = await Goal.findByPk(id); // Busca novamente para garantir valor_atual correto
+            const reloadedGoal = await Goal.findByPk(id);
             if (!reloadedGoal) throw new Error("Falha ao recarregar meta após update.");
 
             const updatedGoalJSON = reloadedGoal.toJSON();
@@ -178,7 +161,7 @@ class GoalController {
             } else { updatedGoalJSON.status = 'pending'; }
             // --- Fim do Recálculo ---
 
-            return res.json(updatedGoalJSON); // Retorna com os cálculos
+            return res.json(updatedGoalJSON);
         } catch (error) {
             if (error instanceof Yup.ValidationError) {
                return res.status(400).json({ error: 'Validação falhou.', details: error.errors });
@@ -188,7 +171,6 @@ class GoalController {
         }
     }
 
-    // --- NOVO MÉTODO: addContribution (Upgrade 1) ---
     async addContribution(req, res) {
         const { id: goalId } = req.params;
         const userId = req.userId;
@@ -230,16 +212,9 @@ class GoalController {
             );
              console.log("Incremento concluído. Linhas afetadas:", affectedRows);
 
-            // --- LÓGICA UPGRADE 2 (COMENTADA) ---
-            /*
-            if (goal.accountId && conta_origem_id) { ... }
-            */
-            // --- FIM LÓGICA UPGRADE 2 ---
-
             await t.commit();
             console.log("Transação commitada.");
 
-            // Retorna a meta atualizada com cálculos
             const finalGoal = updatedGoals && updatedGoals.length > 0 && updatedGoals[0].length > 0 ? updatedGoals[0][0] : null;
 
              if (finalGoal) {
@@ -288,7 +263,6 @@ class GoalController {
         }
     }
 
-    // --- MÉTODO DESTROY (sem alterações) ---
     async destroy(req, res) {
          try {
             const { id } = req.params;
@@ -301,6 +275,28 @@ class GoalController {
         } catch (error) {
             console.error("ERRO AO APAGAR META:", error);
             return res.status(500).json({ error: 'Falha ao apagar meta.', details: error.message });
+        }
+    }
+
+    async listContributions(req, res) {
+        try {
+            const { id: goalId } = req.params;
+            const userId = req.userId;
+
+            const goal = await Goal.findOne({ where: { id: goalId, userId } });
+            if (!goal) {
+                return res.status(404).json({ error: 'Meta não encontrada.' });
+            }
+
+            const contributions = await GoalContribution.findAll({
+                where: { goalId, userId },
+                order: [['data', 'DESC'], ['id', 'DESC']],
+            });
+
+            return res.json(contributions);
+        } catch (error) {
+            console.error("ERRO AO LISTAR APORTES:", error);
+            return res.status(500).json({ error: 'Falha ao listar aportes.', details: error.message });
         }
     }
 }

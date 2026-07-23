@@ -11,6 +11,23 @@ class User extends Model {
         email: DataTypes.STRING,
         senha: DataTypes.VIRTUAL,
         senha_hash: DataTypes.STRING,
+        resetPasswordToken: {
+          type: DataTypes.STRING,
+          field: "reset_password_token",
+        },
+        resetPasswordExpires: {
+          type: DataTypes.DATE,
+          field: "reset_password_expires",
+        },
+        emailVerified: {
+          type: DataTypes.BOOLEAN,
+          field: "email_verified",
+          defaultValue: false,
+        },
+        emailVerificationToken: {
+          type: DataTypes.STRING,
+          field: "email_verification_token",
+        },
       },
       {
         sequelize,

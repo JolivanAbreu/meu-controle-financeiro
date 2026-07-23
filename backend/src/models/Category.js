@@ -7,6 +7,7 @@ class Category extends Model {
     super.init(
       {
         name: DataTypes.STRING,
+        cor: DataTypes.STRING,
       },
       {
         sequelize,
@@ -19,6 +20,10 @@ class Category extends Model {
     this.hasMany(models.Subcategory, {
       foreignKey: 'categoryId',
       as: 'subcategories',
+    });
+    this.hasMany(models.Budget, {
+      foreignKey: 'categoryId',
+      as: 'budgets',
     });
   }
 }

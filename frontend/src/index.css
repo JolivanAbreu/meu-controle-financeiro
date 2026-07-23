@@ -9,3 +9,15 @@ body {
   @apply dark:bg-paper-dark dark:text-ink-dark;
   font-variant-numeric: tabular-nums;
 }
+
+:root {
+  --toast-bg: #F7F7F2;
+  --toast-text: #1C2B2A;
+  --toast-border: #C9CFC5;
+}
+
+.dark {
+  --toast-bg: #1B2420;
+  --toast-text: #E7E9E1;
+  --toast-border: #2B3630;
+}
