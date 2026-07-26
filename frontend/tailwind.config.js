@@ -38,8 +38,8 @@ module.exports = {
         "accent-soft-dark": "#1D2A30",
       },
       fontFamily: {
-        display: ["Fraunces", "serif"],
-        sans: ["IBM Plex Sans", "sans-serif"],
+        display: ["Oswald", "sans-serif"],
+        sans: ["Oswald", "sans-serif"],
         mono: ["IBM Plex Mono", "monospace"],
       },
       boxShadow: {

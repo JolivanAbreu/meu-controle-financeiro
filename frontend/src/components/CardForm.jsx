@@ -298,7 +298,7 @@ function CardForm({ onSuccess, initialData, cartoesFisicos, defaultTipo, default
 
       <button
         type="submit"
-        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-receita dark:bg-receita-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-receita focus-visible:ring-offset-2"
       >
         {initialData ? "Atualizar Cartão" : "Salvar Cartão"}
       </button>

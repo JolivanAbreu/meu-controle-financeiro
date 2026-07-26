@@ -161,7 +161,7 @@ function BudgetForm({ onSuccess, initialData, defaultMes, defaultAno }) {
       <div className="flex justify-end pt-2">
         <button
           type="submit"
-          className="px-4 py-2 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity"
+          className="px-4 py-2 font-medium text-sm text-paper-raised dark:text-paper-dark bg-receita dark:bg-receita-dark rounded-lg hover:opacity-90 transition-opacity"
         >
           Salvar Orçamento
         </button>

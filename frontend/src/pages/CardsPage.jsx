@@ -188,7 +188,6 @@ function CardsPage() {
     ...historicoData.map((h) => h.totalGasto || 0),
   );
 
-  // --- Resumo geral: calculado a partir dos cartões físicos já carregados ---
   const resumoGeral = useMemo(() => {
     if (fisicos.length === 0) return null;
 
@@ -201,7 +200,6 @@ function CardsPage() {
       0,
     );
 
-    // Próximo vencimento: menor distância em dias até o dia de vencimento de cada cartão.
     const hoje = new Date();
     const hojeSemHora = new Date(
       hoje.getFullYear(),
@@ -240,7 +238,6 @@ function CardsPage() {
       }
     });
 
-    // Alerta: cartão com maior percentual de uso, entre os que passaram de 85%.
     let alerta = null;
     fisicos.forEach((f) => {
       if (f.limiteTotal > 0) {
@@ -349,7 +346,7 @@ function CardsPage() {
           </select>
           <button
             onClick={handleNovoCartao}
-            className="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
+            className="bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
           >
             + Novo Cartão
           </button>
@@ -576,7 +573,7 @@ function CardsPage() {
           </button>
         </p>
       ) : (
-        <div className="flex flex-wrap gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 items-start">
           {fisicos.map((fisico) => {
             const virtuais = virtuaisPorPai[fisico.id] || [];
             const grupo = [fisico, ...virtuais];

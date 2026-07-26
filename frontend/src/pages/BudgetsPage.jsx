@@ -40,7 +40,7 @@ function BudgetsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
 
-  // --- Filtro de mês/ano (o endpoint já suporta, só não era usado aqui) ---
+  // Filtro de mês/ano
   const [mesSelecionado, setMesSelecionado] = useState(
     new Date().getMonth() + 1,
   );
@@ -105,7 +105,7 @@ function BudgetsPage() {
     }
   };
 
-  // --- Resumo do período selecionado ---
+  // Resumo do período selecionado
   const summary = useMemo(() => {
     const totalLimite = budgets.reduce(
       (sum, b) => sum + parseFloat(b.limite || 0),
@@ -122,7 +122,7 @@ function BudgetsPage() {
     return { totalLimite, totalGasto, percentual, ultrapassados };
   }, [budgets]);
 
-  // --- Ordena pelos orçamentos mais "no limite" primeiro ---
+  // Ordena pelos orçamentos mais "no limite" primeiro
   const sortedBudgets = useMemo(() => {
     return [...budgets].sort((a, b) => {
       const pctA = a.limite > 0 ? a.gasto_atual / a.limite : 0;
@@ -175,14 +175,14 @@ function BudgetsPage() {
           </select>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
+            className="bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
           >
             + Novo Orçamento
           </button>
         </div>
       </div>
 
-      {/* NOVO: Resumo do período */}
+      {/* Resumo do período */}
       {budgets.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="bg-paper-raised dark:bg-paper-raised-dark border border-rule dark:border-rule-dark rounded-xl shadow-card dark:shadow-card-dark p-4">
@@ -262,9 +262,7 @@ function BudgetsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {sortedBudgets.map((budget) => {
             const percentualGasto =
-              budget.limite > 0
-                ? (budget.gasto_atual / budget.limite) * 100
-                : 0;
+              budget.limite > 0 ? (budget.gasto_atual / budget.limite) * 100 : 0;
             const isOver = percentualGasto > 100;
 
             return (
@@ -278,8 +276,7 @@ function BudgetsPage() {
                       {budget.categoria}
                     </h3>
                     <span className="text-xs text-ink-soft dark:text-ink-soft-dark">
-                      {MESES.find((m) => m.valor === budget.mes)?.nome} /{" "}
-                      {budget.ano}
+                      {MESES.find((m) => m.valor === budget.mes)?.nome} / {budget.ano}
                     </span>
                   </div>
                   <div className="flex gap-1">
@@ -338,9 +335,8 @@ function BudgetsPage() {
 
                 {budget.categoriaValida === false && (
                   <p className="text-despesa dark:text-despesa-dark text-xs mt-2">
-                    Categoria "{budget.categoria}" não foi reconhecida
-                    automaticamente. Edite este orçamento e selecione a
-                    categoria novamente.
+                    Categoria "{budget.categoria}" não foi reconhecida automaticamente.
+                    Edite este orçamento e selecione a categoria novamente.
                   </p>
                 )}
               </div>

@@ -118,7 +118,6 @@ function DashboardPage() {
     fetchGoals();
   }, [fetchGoals]);
 
-  // Transações apenas do mês/ano selecionado (recorte da janela de 6 meses)
   const transactions = useMemo(() => {
     return rangeTransactions.filter((t) => {
       const d = new Date(t.data);
@@ -143,7 +142,6 @@ function DashboardPage() {
 
   const saldo = totals.receitas - totals.despesas;
 
-  // --- categoria com maior gasto no mês ---
   const maiorCategoria = useMemo(() => {
     const despesas = transactions.filter((t) => t.tipo === "despesa");
     if (despesas.length === 0) return null;
@@ -165,7 +163,6 @@ function DashboardPage() {
     return { nome, valor, percentual };
   }, [transactions]);
 
-  // --- tendência dos últimos 6 meses (a partir da mesma janela de dados) ---
   const trendData = useMemo(() => {
     const meses = [];
     for (let i = 5; i >= 0; i--) {
@@ -198,7 +195,6 @@ function DashboardPage() {
     });
   }, [rangeTransactions, mesSelecionado, anoSelecionado]);
 
-  // --- próxima meta em andamento (a lista já vem ordenada por prazo) ---
   const proximaMeta = useMemo(() => {
     return goals.find(
       (g) => parseFloat(g.valor_atual) < parseFloat(g.valor_objetivo),
@@ -312,7 +308,7 @@ function DashboardPage() {
           </select>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity shadow-card dark:shadow-card-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+            className="bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm hover:opacity-90 transition-opacity shadow-card dark:shadow-card-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-receita focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
           >
             + Nova transação
           </button>
@@ -396,7 +392,9 @@ function DashboardPage() {
               <div className="h-1.5 rounded-full bg-rule dark:bg-rule-dark mt-3 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-despesa dark:bg-despesa-dark"
-                  style={{ width: `${Math.min(maiorCategoria.percentual, 100)}%` }}
+                  style={{
+                    width: `${Math.min(maiorCategoria.percentual, 100)}%`,
+                  }}
                 />
               </div>
             </>

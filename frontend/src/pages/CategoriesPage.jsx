@@ -7,8 +7,8 @@ import {
   getCategories,
   getSubcategories,
   createSubcategory,
-  updateSubcategory,
-  deleteSubcategory,
+  updateSubcategory, 
+  deleteSubcategory, 
   updateCategory,
 } from "../services/categoryService";
 import Modal from "../components/Modal";
@@ -64,11 +64,9 @@ function CategoriesPage() {
   };
   useEffect(() => {
     loadData();
-  }, [selectedCatId]); 
+  }, [selectedCatId]);
 
-  // --- Troca a cor de uma categoria (usada nos gráficos) ---
   const handleCorChange = async (category, cor) => {
-    // Atualização otimista: reflete na tela antes da resposta do servidor.
     setCategories((prev) =>
       prev.map((c) => (c.id === category.id ? { ...c, cor } : c)),
     );
@@ -114,7 +112,6 @@ function CategoriesPage() {
     }
   };
 
-  // Handlers de edição
   const handleEditClick = (subcategory) => {
     setEditingSubcategory(subcategory);
     setEditName(subcategory.name);
@@ -136,7 +133,6 @@ function CategoriesPage() {
         categoryId: parseInt(editCategoryId, 10),
       });
 
-      // Atualiza a lista de subcategorias no estado local
       setSubcategories(
         (prev) =>
           prev
@@ -164,10 +160,9 @@ function CategoriesPage() {
     setEditCategoryId("");
   };
 
-  // Handlers de exclusão
   const handleDeleteClick = (subcategory) => {
     setDeletingSubcategory(subcategory);
-    setError(null);
+    setError(null); // Limpa erros
     setIsDeleteModalOpen(true);
   };
 
@@ -180,7 +175,6 @@ function CategoriesPage() {
     try {
       await deleteSubcategory(deletingSubcategory.id);
 
-      // Remove a subcategoria da lista local
       setSubcategories((prev) =>
         prev.filter((sub) => sub.id !== deletingSubcategory.id),
       );
@@ -189,7 +183,6 @@ function CategoriesPage() {
       closeDeleteModal(); // Fecha o modal
     } catch (err) {
       console.error("Erro ao excluir subcategoria", err);
-      // Verifica se o erro é por causa de transações vinculadas (exemplo, pode variar)
       if (
         err.response?.status === 500 &&
         err.response?.data?.error?.includes("constraint")
@@ -279,7 +272,7 @@ function CategoriesPage() {
             <button
               type="submit"
               disabled={formLoading}
-              className="w-full mt-1 bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-5 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="w-full mt-1 bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark px-5 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {formLoading ? "Salvando..." : "Salvar"}
             </button>
@@ -405,7 +398,7 @@ function CategoriesPage() {
             <button
               type="submit"
               disabled={formLoading}
-              className="px-4 py-2 text-sm font-medium bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+              className="px-4 py-2 text-sm font-medium bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
               {formLoading ? "Salvando..." : "Salvar Alterações"}
             </button>

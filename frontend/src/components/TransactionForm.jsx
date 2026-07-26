@@ -72,8 +72,7 @@ function TransactionForm({ onSuccess, initialData }) {
 
   useEffect(() => {
     if (!dataLoading && initialData) {
-      const { tipo, valor, data, descricao, recurrence, subcategory, cardId } =
-        initialData;
+      const { tipo, valor, data, descricao, recurrence, subcategory, cardId } = initialData;
 
       setTipo(tipo);
       setValor(valor);
@@ -88,7 +87,7 @@ function TransactionForm({ onSuccess, initialData }) {
         setSelectedCategory(parentCategoryId);
 
         const relevantSubcategories = allSubcategories.filter(
-          (sc) => sc.categoryId === parentCategoryId,
+          (sc) => sc.categoryId === parentCategoryId
         );
         setFilteredSubcategories(relevantSubcategories);
 
@@ -115,7 +114,7 @@ function TransactionForm({ onSuccess, initialData }) {
 
     if (categoryId) {
       const filtered = allSubcategories.filter(
-        (sub) => sub.categoryId === parseInt(categoryId),
+        (sub) => sub.categoryId === parseInt(categoryId)
       );
       setFilteredSubcategories(filtered);
     } else {
@@ -160,8 +159,7 @@ function TransactionForm({ onSuccess, initialData }) {
       const response = await toast.promise(promise, {
         loading: "Salvando...",
         success: "Transação salva com sucesso!",
-        error: (err) =>
-          err.response?.data?.error || "Falha ao salvar a transação.",
+        error: (err) => err.response?.data?.error || "Falha ao salvar a transação.",
       });
       onSuccess(response.data);
     } catch (error) {
@@ -246,9 +244,7 @@ function TransactionForm({ onSuccess, initialData }) {
             className={inputClasses}
           >
             <option value="">
-              {selectedCategory
-                ? "Selecione uma subcategoria"
-                : "Escolha uma categoria"}
+              {selectedCategory ? "Selecione uma subcategoria" : "Escolha uma categoria"}
             </option>
             {filteredSubcategories.map((sub) => (
               <option key={sub.id} value={sub.id}>
@@ -258,8 +254,7 @@ function TransactionForm({ onSuccess, initialData }) {
           </select>
           {selectedCategory && filteredSubcategories.length === 0 && (
             <p className="text-xs text-ink-soft dark:text-ink-soft-dark mt-1">
-              Nenhuma subcategoria. Adicione uma na página "Gerenciar
-              Categorias".
+              Nenhuma subcategoria. Adicione uma na página "Gerenciar Categorias".
             </p>
           )}
         </div>
@@ -358,7 +353,7 @@ function TransactionForm({ onSuccess, initialData }) {
       {/* Botão de Submit */}
       <button
         type="submit"
-        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-accent dark:bg-accent-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+        className="w-full px-4 py-2.5 font-medium text-sm text-paper-raised dark:text-paper-dark bg-receita dark:bg-receita-dark rounded-lg hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-receita focus-visible:ring-offset-2"
       >
         {initialData ? "Atualizar Transação" : "Salvar Transação"}
       </button>

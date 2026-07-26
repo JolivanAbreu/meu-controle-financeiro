@@ -5,7 +5,13 @@ import api from "../services/api";
 import toast from "react-hot-toast";
 import Modal from "../components/Modal";
 import TransactionForm from "../components/TransactionForm";
-import { FaEdit, FaTrash, FaSearch, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrash,
+  FaSearch,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
@@ -31,6 +37,8 @@ function TransactionsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [transactionToDelete, setTransactionToDelete] = useState(null);
 
+  // Espera 400ms sem digitação antes de disparar a busca, evitando uma
+  // requisição a cada tecla pressionada.
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
@@ -101,7 +109,11 @@ function TransactionsPage() {
     }
   };
 
-  const executeDelete = async (id, isGroup = false, overrideTransaction = null) => {
+  const executeDelete = async (
+    id,
+    isGroup = false,
+    overrideTransaction = null,
+  ) => {
     const target = overrideTransaction || transactionToDelete;
     if (!target) return;
 
@@ -152,7 +164,7 @@ function TransactionsPage() {
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="bg-accent dark:bg-accent-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
+            className="bg-receita dark:bg-receita-dark text-paper-raised dark:text-paper-dark px-4 py-2 rounded-lg font-medium text-sm shadow-card dark:shadow-card-dark hover:opacity-90 transition-opacity"
           >
             + Nova transação
           </button>
@@ -175,13 +187,19 @@ function TransactionsPage() {
             <tbody className="divide-y divide-rule dark:divide-rule-dark">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="p-10 text-center text-ink-soft dark:text-ink-soft-dark">
+                  <td
+                    colSpan="6"
+                    className="p-10 text-center text-ink-soft dark:text-ink-soft-dark"
+                  >
                     Carregando...
                   </td>
                 </tr>
               ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="p-10 text-center text-ink-soft dark:text-ink-soft-dark">
+                  <td
+                    colSpan="6"
+                    className="p-10 text-center text-ink-soft dark:text-ink-soft-dark"
+                  >
                     {debouncedSearch
                       ? `Nenhum resultado para "${debouncedSearch}".`
                       : "Nenhuma transação encontrada."}
@@ -189,7 +207,10 @@ function TransactionsPage() {
                 </tr>
               ) : (
                 transactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-paper dark:hover:bg-paper-dark transition-colors">
+                  <tr
+                    key={t.id}
+                    className="hover:bg-paper dark:hover:bg-paper-dark transition-colors"
+                  >
                     <td className="px-5 py-3.5 font-mono text-[13px] text-ink-soft dark:text-ink-soft-dark whitespace-nowrap">
                       {formatDate(t.data)}
                     </td>
