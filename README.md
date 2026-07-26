@@ -5,6 +5,8 @@ Sistema de finanças pessoais full-stack: controle de transações (com recorrê
 - **Backend:** Node.js + Express + Sequelize (MariaDB/MySQL)
 - **Frontend:** React 19 + Vite + Tailwind CSS
 
+📄 Documentação complementar: [Referência da API](docs/API.md) · [Arquitetura](docs/ARCHITECTURE.md) · [Contribuindo](CONTRIBUTING.md) · [Changelog](CHANGELOG.md)
+
 ---
 
 ## Sumário
@@ -195,6 +197,8 @@ MAIL_PASS=sua_senha_de_app
 ## 8. API — rotas principais
 
 Base: `http://localhost:3333/api`. Rotas privadas exigem `Authorization: Bearer <token>`.
+
+> Referência completa com exemplos de request/response: [`docs/API.md`](docs/API.md)
 
 | Recurso | Rotas |
 |---|---|
