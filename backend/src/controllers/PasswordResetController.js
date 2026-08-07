@@ -1,8 +1,6 @@
-// backend/src/controllers/PasswordResetController.js
-
 const crypto = require('crypto');
-const nodemailer = require('nodemailer');
 const User = require('../models/User');
+const mailer = require('../config/mailer');
 
 const TOKEN_TTL_MS = 60 * 60 * 1000;
 
@@ -35,31 +33,16 @@ class PasswordResetController {
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
       const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
 
-      if (process.env.MAIL_HOST && process.env.MAIL_USER && process.env.MAIL_PASS) {
-        const transporter = nodemailer.createTransport({
-          host: process.env.MAIL_HOST,
-          port: process.env.MAIL_PORT || 465,
-          secure: (process.env.MAIL_PORT || 465) == 465,
-          auth: {
-            user: process.env.MAIL_USER,
-            pass: process.env.MAIL_PASS,
-          },
-        });
-
-        await transporter.sendMail({
-          from: `"Meu Controle Financeiro" <${process.env.MAIL_USER}>`,
-          to: user.email,
-          subject: 'Redefinição de senha',
-          html: `
-            <p>Olá, ${user.nome}</p>
-            <p>Recebemos um pedido para redefinir sua senha. Clique no link abaixo (válido por 1 hora):</p>
-            <p><a href="${resetLink}">${resetLink}</a></p>
-            <p>Se você não pediu isso, pode ignorar este e-mail com segurança.</p>
-          `,
-        });
-      } else {
-        console.warn('MAIL_* não configurado — link de redefinição não enviado:', resetLink);
-      }
+      await mailer.sendMail({
+        to: user.email,
+        subject: 'Redefinição de senha',
+        html: `
+          <p>Olá, ${user.nome}</p>
+          <p>Recebemos um pedido para redefinir sua senha. Clique no link abaixo (válido por 1 hora):</p>
+          <p><a href="${resetLink}">${resetLink}</a></p>
+          <p>Se você não pediu isso, pode ignorar este e-mail com segurança.</p>
+        `,
+      });
 
       return res.json(genericMessage);
     } catch (error) {

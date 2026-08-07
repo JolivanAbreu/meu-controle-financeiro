@@ -195,6 +195,51 @@ function DashboardPage() {
     });
   }, [rangeTransactions, mesSelecionado, anoSelecionado]);
 
+  const comparativoMes = useMemo(() => {
+    if (trendData.length < 2) return null;
+    const atual = trendData[trendData.length - 1];
+    const anterior = trendData[trendData.length - 2];
+    const variacao = (valorAtual, valorAnterior) => {
+      if (!valorAnterior) return null;
+      return ((valorAtual - valorAnterior) / valorAnterior) * 100;
+    };
+    return {
+      label: anterior.label,
+      receitas: variacao(atual.receitas, anterior.receitas),
+      despesas: variacao(atual.despesas, anterior.despesas),
+    };
+  }, [trendData]);
+
+  const categoriaComparativo = useMemo(() => {
+    if (!maiorCategoria) return null;
+
+    const referencias = [];
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(anoSelecionado, mesSelecionado - 1 - i, 1);
+      referencias.push({ mes: d.getMonth() + 1, ano: d.getFullYear() });
+    }
+
+    const totaisPorMes = referencias.map(({ mes, ano }) =>
+      rangeTransactions
+        .filter((t) => {
+          const d = new Date(t.data);
+          return (
+            t.tipo === "despesa" &&
+            (t.subcategory?.category?.name || "Outros") ===
+              maiorCategoria.nome &&
+            d.getUTCMonth() + 1 === mes &&
+            d.getUTCFullYear() === ano
+          );
+        })
+        .reduce((soma, t) => soma + parseFloat(t.valor), 0),
+    );
+
+    const media = totaisPorMes.reduce((a, b) => a + b, 0) / totaisPorMes.length;
+    if (media === 0) return null;
+
+    return { percentual: ((maiorCategoria.valor - media) / media) * 100 };
+  }, [maiorCategoria, rangeTransactions, mesSelecionado, anoSelecionado]);
+
   const proximaMeta = useMemo(() => {
     return goals.find(
       (g) => parseFloat(g.valor_atual) < parseFloat(g.valor_objetivo),
@@ -322,12 +367,30 @@ function DashboardPage() {
           value={totals.receitas}
           icon={<FaArrowUp />}
           tone="receita"
+          delta={
+            comparativoMes?.receitas != null
+              ? {
+                  percentual: comparativoMes.receitas,
+                  positive: comparativoMes.receitas >= 0,
+                  label: comparativoMes.label,
+                }
+              : null
+          }
         />
         <SummaryCard
           title="Despesas"
           value={totals.despesas}
           icon={<FaArrowDown />}
           tone="despesa"
+          delta={
+            comparativoMes?.despesas != null
+              ? {
+                  percentual: comparativoMes.despesas,
+                  positive: comparativoMes.despesas <= 0,
+                  label: comparativoMes.label,
+                }
+              : null
+          }
         />
         <SummaryCard
           title="Saldo"
@@ -389,6 +452,19 @@ function DashboardPage() {
                 {formatCurrency(maiorCategoria.valor)} ·{" "}
                 {Math.round(maiorCategoria.percentual)}% das despesas
               </p>
+              {categoriaComparativo && (
+                <p
+                  className={`text-[11px] mt-1 ${
+                    categoriaComparativo.percentual > 0
+                      ? "text-despesa dark:text-despesa-dark"
+                      : "text-receita dark:text-receita-dark"
+                  }`}
+                >
+                  {categoriaComparativo.percentual >= 0 ? "↑" : "↓"}{" "}
+                  {Math.abs(Math.round(categoriaComparativo.percentual))}% vs
+                  média dos últimos 3 meses
+                </p>
+              )}
               <div className="h-1.5 rounded-full bg-rule dark:bg-rule-dark mt-3 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-despesa dark:bg-despesa-dark"
@@ -709,7 +785,7 @@ const TONE_STYLES = {
   },
 };
 
-function SummaryCard({ title, value, icon, tone }) {
+function SummaryCard({ title, value, icon, tone, delta }) {
   const styles = TONE_STYLES[tone] || TONE_STYLES.accent;
   return (
     <div
@@ -723,6 +799,18 @@ function SummaryCard({ title, value, icon, tone }) {
         <p className={`font-mono text-xl font-medium ${styles.text}`}>
           {formatCurrency(value)}
         </p>
+        {delta && (
+          <p
+            className={`text-[11px] mt-0.5 ${
+              delta.positive
+                ? "text-receita dark:text-receita-dark"
+                : "text-despesa dark:text-despesa-dark"
+            }`}
+          >
+            {delta.percentual >= 0 ? "↑" : "↓"}{" "}
+            {Math.abs(Math.round(delta.percentual))}% vs {delta.label}
+          </p>
+        )}
       </div>
     </div>
   );

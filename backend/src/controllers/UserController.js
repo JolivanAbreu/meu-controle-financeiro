@@ -1,9 +1,7 @@
-// backend/src/controllers/UserController.js
-
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
 const User = require('../models/User');
+const mailer = require('../config/mailer');
 
 function hashToken(rawToken) {
   return crypto.createHash('sha256').update(rawToken).digest('hex');
@@ -13,37 +11,19 @@ async function sendVerificationEmail(user, rawToken) {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const verifyLink = `${frontendUrl}/verify-email?token=${rawToken}`;
 
-  if (process.env.MAIL_HOST && process.env.MAIL_USER && process.env.MAIL_PASS) {
-    try {
-      const transporter = nodemailer.createTransport({
-        host: process.env.MAIL_HOST,
-        port: process.env.MAIL_PORT || 465,
-        secure: (process.env.MAIL_PORT || 465) == 465,
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS,
-        },
-      });
-
-      await transporter.sendMail({
-        from: `"Meu Controle Financeiro" <${process.env.MAIL_USER}>`,
-        to: user.email,
-        subject: 'Confirme seu e-mail',
-        html: `
-          <p>Olá, ${user.nome}</p>
-          <p>Obrigado por se cadastrar! Confirme seu e-mail clicando no link abaixo:</p>
-          <p><a href="${verifyLink}">${verifyLink}</a></p>
-          <p>Se você não fez esse cadastro, pode ignorar este e-mail.</p>
-        `,
-      });
-    } catch (mailError) {
-      // Não bloqueia o cadastro se o envio falhar — só loga o problema.
-      console.error('Falha ao enviar e-mail de confirmação:', mailError);
-    }
-  } else {
-    // Configuração de e-mail ausente — comportamento idêntico ao do
-    // "esqueci minha senha": não bloqueia o fluxo, só loga o link.
-    console.warn('MAIL_* não configurado — link de confirmação não enviado:', verifyLink);
+  try {
+    await mailer.sendMail({
+      to: user.email,
+      subject: 'Confirme seu e-mail',
+      html: `
+        <p>Olá, ${user.nome}</p>
+        <p>Obrigado por se cadastrar! Confirme seu e-mail clicando no link abaixo:</p>
+        <p><a href="${verifyLink}">${verifyLink}</a></p>
+        <p>Se você não fez esse cadastro, pode ignorar este e-mail.</p>
+      `,
+    });
+  } catch (mailError) {
+    console.error('Falha ao enviar e-mail de confirmação:', mailError);
   }
 }
 
@@ -73,7 +53,6 @@ class UserController {
     }
   }
 
-  // --- NOVO: confirma o e-mail a partir do token recebido ---
   async verifyEmail(req, res) {
     try {
       const { token } = req.query;
@@ -96,7 +75,6 @@ class UserController {
     }
   }
 
-  // --- NOVO: reenvia o e-mail de confirmação (rota privada) ---
   async resendVerification(req, res) {
     try {
       const user = await User.findByPk(req.userId);
@@ -119,7 +97,6 @@ class UserController {
     }
   }
 
-  // --- Perfil do usuário autenticado ---
   async show(req, res) {
     try {
       const user = await User.findByPk(req.userId, {
@@ -148,7 +125,6 @@ class UserController {
         if (emailEmUso) {
           return res.status(400).json({ error: 'Este e-mail já está em uso.' });
         }
-        // Trocar de e-mail exige nova confirmação.
         user.emailVerified = false;
         const rawToken = crypto.randomBytes(32).toString('hex');
         user.emailVerificationToken = hashToken(rawToken);

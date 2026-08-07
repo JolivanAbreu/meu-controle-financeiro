@@ -82,7 +82,7 @@ function TransactionForm({ onSuccess, initialData }) {
       setSelectedCard(cardId || "");
 
       if (subcategory) {
-        const parentCategoryId = subcategory.category_id;
+        const parentCategoryId = subcategory.category?.id;
 
         setSelectedCategory(parentCategoryId);
 
